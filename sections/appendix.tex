@@ -4,8 +4,9 @@
 \myparagraph{Proof of Proposition~\ref{prop:exact}.}
 \begin{proof}
 Set $\omega = e^{2\pi i/k}$, $z_0=z_1=1$ initially, $\theta_0(o)=0$,
-$\theta_1(o)=\tfrac{2\pi}{k}\,b(o)$ and $\mathrm{inj}\equiv 0$. Then $z_0=1$ at every step
-and $z_1=\omega^{c}$ with $c=\sum_t b_t$. Readout weights $w_{a0}=1$ and $w_{a1}=\omega^{-a}$ give
+$\theta_1(o)=\tfrac{2\pi}{k}\,e(o)$ and $\mathrm{inj}\equiv 0$, with $e(o)$ the
+event bit encoded in $o$. Then $z_0=1$ at every step and $z_1=\omega^{c}$ with
+$c=\sum_t e_t$. Readout weights $w_{a0}=1$ and $w_{a1}=\omega^{-a}$ give
 \begin{equation}
 \psi_a = 1 + \omega^{\,c-a},\qquad
 |\psi_a|^2 = 2 + 2\cos\!\Big(\tfrac{2\pi}{k}(c-a)\Big),
@@ -17,7 +18,7 @@ unchanged.
 \end{proof}
 
 
-\begin{proposition}[Global-phase invariance of the Born scores]
+\begin{proposition}[Global-phase invariance of squared-amplitude scores]
 \label{prop:gauge}
 With the complex-linear convention $\psi_a=\sum_jw_{aj}z_j$, the score
 $|\psi_a|^2$ is unchanged by $z\mapsto e^{i\varphi}z$.
@@ -30,8 +31,8 @@ Multiplying $z$ by $e^{i\varphi}$ multiplies $\psi_a$ by the same unit-modulus s
 Invariance under $\varphi=\pi$ forces any real-linear invariant to be zero, while
 $\operatorname{Re}(\overline{z_i}z_j)$ gives a nonconstant quadratic invariant.
 \end{proof}
-The symmetry does not single out Born scores. Relative-phase cosine decoders and
-Hermitian quadratic forms share it, and invariant functions need not be polynomials.
+Relative-phase cosine decoders and Hermitian quadratic forms also have this
+symmetry, as do some nonpolynomial functions.
 A fixed reference channel also permits exact real-linear decoding of the phase channel,
 so absolute-phase controls compare information access as well as readout form.
 
@@ -82,13 +83,13 @@ small enough that the reward objective keeps the rotation away from the no-rotat
 \label{app:kboundary}
 Table~\ref{tab:kscaling} reports reward-trained extrapolation after a
 curriculum of lengths 4 through 14. The decoder margin below quantifies how
-closely the ideal scores are spaced as $k$ increases. Hard-angle controls
+closely the ideal scores are spaced as $k$ increases. Controls with exact angles
 are reported in Appendix~\ref{app:additional}.
 
 \begin{lemma}[Interference margin and its decay in $k$]
 \label{lem:margin}
-In the exact solution of Proposition~\ref{prop:exact}, the Born score of the correct residue exceeds
-that of every other action by
+In the exact solution of Proposition~\ref{prop:exact}, the squared-amplitude
+score of the correct residue exceeds that of every other action by
 \begin{equation}
 \begin{aligned}
 \Delta_k &\;=\; |\psi_{a^\star}|^2 - \max_{a\neq a^\star}|\psi_a|^2\\
@@ -143,7 +144,7 @@ $k$ residues, so the mean sampled success is bounded by
 \]
 \end{proof}
 A contractive update can still decode with a vanishing margin. For example,
-$h_0=1$ and $h_t=\gamma(-1)^{b_t}h_{t-1}$ recover parity by
+$h_0=1$ and $h_t=\gamma(-1)^{e_t}h_{t-1}$ recover parity by
 $\arg\max(h_T,-h_T)$ at every finite length in exact arithmetic.
 
 \section{The Diagonal Complex State-Space Baseline}
@@ -156,15 +157,15 @@ $\lambda_j=\exp(-\exp(\nu_j)+i\exp(\phi_j))$ and
 $\gamma_j=\sqrt{1-|\lambda_j|^2}$. We initialize $|\lambda_j|$ uniformly
 in $[0.9,0.999]$ and its angle in $[0,2\pi)$. In the unit-modulus
 controls we set $|\lambda_j|=\gamma_j=1$. The last row of
-Table~\ref{tab:lru} uses the same unit-modulus recurrence and Born readout
+Table~\ref{tab:lru} uses the same unit-modulus recurrence and squared-amplitude readout
 with the angle chosen from the observation. It trains without the
 stabilizers or the length curriculum.
 
 For a single fixed linear layer, the state is affine in the input and the
 difference between two quadratic scores has degree at most two. Parity
 for $L>2$ is orthogonal under the uniform input distribution to every
-such polynomial. A polynomial whose sign agrees with parity everywhere
-would have positive inner product with it. A fixed tie rule can be
+such polynomial. A polynomial with the same sign as parity on every input would have positive
+inner product with it. A fixed tie rule can be
 absorbed into a small constant shift on the finite input set. This
 restriction applies only to the single linear layer. The two-layer
 variant with a gated linear unit reaches mean accuracy $0.72$ (best seed
@@ -186,9 +187,9 @@ model & params & $L{=}10$ & $L{=}20$ & $L{=}80$ \\
 \midrule
 LRU + linear readout & 259 & 0.50 & --- & --- \\
 LRU + general quadratic & 2.2k & 0.58 & --- & --- \\
-LRU + Born readout & 257 & 0.64 (0.76) & 0.50 & 0.50 \\
-LRU, $|\lambda|{=}1$, + Born & 257 & 0.66 (0.75) & 0.53 & 0.50 \\
-LRU $\times2$ + GLU + Born & 1.9k & 0.72 (0.90) & 0.50 & 0.50 \\
+LRU + squared-amplitude readout & 257 & 0.64 (0.76) & 0.50 & 0.50 \\
+LRU, $|\lambda|{=}1$, + squared-amplitude readout & 257 & 0.66 (0.75) & 0.53 & 0.50 \\
+LRU $\times2$ + GLU + squared-amplitude readout & 1.9k & 0.72 (0.90) & 0.50 & 0.50 \\
 \midrule
 \wsrow \textbf{+ observation-conditioned} & & & & \\
 \wsrow \textbf{\quad rotation (Eq.~\ref{eq:evolve})} & \textbf{337} & \textbf{0.996} (1.00) & 0.57 & 0.52 \\
@@ -201,13 +202,11 @@ LRU $\times2$ + GLU + Born & 1.9k & 0.72 (0.90) & 0.50 & 0.50 \\
 In the $\Z_4$ operate task, the policy sees the initial pointer for two
 steps, the target, and the command and execution cues for intervening
 turns. It learns corrective turns and the finish action from terminal
-reward with a known cycle. Training uses 1--8 turns. The wider evaluation
+reward. Training uses 1--8 turns. The wider evaluation
 includes 32, 64, and 128 turns and changes the clockwise probability.
 The programmed counter is an oracle. The learned cyclic-belief counter
 estimates shifts from observations and learns an action head.
 
-The RLBench/CoppeliaSim visualization uses \texttt{set\_orientation} to
-update the valve pose and a scripted arm-motion macro. Its checks compare
-rendered poses with internal simulator state. We withdrew the earlier
-physical-execution result of $0.94$ because its checkpoints and execution
-logs were unavailable.
+The RLBench/CoppeliaSim visualization updates the valve pose with
+\texttt{set\_orientation} and moves the arm with a scripted macro. Its checks
+compare rendered poses with internal simulator state.

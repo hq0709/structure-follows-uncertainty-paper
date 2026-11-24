@@ -1,33 +1,32 @@
 \section{Additional controlled experiments}
 \label{app:additional}
-\myparagraph{Fixed-length training.} The sequence policies use advantage actor-critic, a terminal reward of $\pm1$,
-full-episode backpropagation, Adam, and gradient clipping at norm~1. Unless
-specified, models use width 16, batch size 256, and a learning rate of $0.003$.
-The fixed-length Born model uses neither state normalization nor angle
-regularization, and it does not mix its hidden coordinates. The length
+\myparagraph{Fixed-length training.} The sequence policies use advantage
+actor-critic, a terminal reward of $\pm1$, full-episode backpropagation, Adam,
+and gradient clipping at norm~1. The default settings are width 16, batch size
+256, and a learning rate of $0.003$. The fixed-length phase rotation uses an
+unregularized, unnormalized state update with diagonal rotation. The length
 curriculum uses normalization and the group-angle penalty from
-Section~\ref{sec:stab}. The independently tuned comparisons follow.
+Section~\ref{sec:stab}.
 
-All new studies retain every reported seed, including failures. These are fresh
-experiments rather than reconstructions of missing historical records. The main
-sequence comparison gives each of eight families two learning rates
+The sequence comparison gives each of eight families two learning rates
 ($0.001,0.003$) and two tuning seeds (100,101), each with 4,000 updates.
 Selection averages the last three $L=14$ validation evaluations. Five independent
 seeds (0--4) then run 6,000 A2C updates with batch 256, terminal reward,
-and training lengths $4,6,8,10,12,14$. No long-horizon test is used for selection.
-Cells report mean (sample SD) across seeds; each test uses 1,024 episodes per seed.
-Gaussian observations have 16 dimensions and noise SD $0.25$. The group order
-remains known. Hard angles use a straight-through quantizer while retaining
-the original injection and readout, so this control is not an exact counter.
+and training lengths $4,6,8,10,12,14$. Cells report mean (sample SD) across
+seeds. Each test uses 1,024 episodes per seed.
+Gaussian observations have 16 dimensions and noise SD $0.25$. The exact-angle
+variant uses a straight-through quantizer while retaining the original injection
+and readout. Tables~\ref{tab:newseq2}, \ref{tab:newseq3}, and \ref{tab:newseq4}
+report the Gaussian-feature experiments for $k=2,3,4$.
+Table~\ref{tab:newseq5} reports the clean sequence control for $k=5$.
 
 The modern adapters use the official DeltaProduct layer at commit
 \texttt{d62241a}, with one 16-dimensional head, value expansion two, output gate,
 negative eigenvalues, no convolution or forgetting, and a residual feedforward
 block. DeltaNet uses one Householder update and DeltaProduct two. The CPU
-recurrent kernel is verified against independent dense outputs and gradients;
-streaming and full-sequence evaluation agree. These small RL adapters do not
-reproduce full published configurations. Their results therefore cannot support
-a universal comparison with all DeltaNet/DeltaProduct models.
+recurrent kernel is verified against independent dense outputs and gradients.
+Streaming and full-sequence evaluation agree. The adapters compare the
+Householder updates within the common compact policy configuration.
 
 \begin{table}[tbp]
 \centering\small
@@ -43,9 +42,9 @@ DeltaNet adapter & 0.003 & 0.999 (0.002) & 0.997 (0.002) & 0.990 (0.006) & 0.938
 DeltaProduct adapter & 0.001 & 0.999 (0.001) & 0.997 (0.001) & 0.985 (0.010) & 0.897 (0.097) \\
 LSTM & 0.003 & 0.897 (0.226) & 0.899 (0.220) & 0.899 (0.213) & 0.893 (0.217) \\
 LSTM32 & 0.003 & 0.947 (0.113) & 0.948 (0.108) & 0.940 (0.117) & 0.933 (0.118) \\
-Born + soft reg. & 0.003 & 0.701 (0.048) & 0.505 (0.040) & 0.496 (0.007) & 0.503 (0.009) \\
-Born hard angles & 0.001 & 0.492 (0.021) & 0.500 (0.020) & 0.491 (0.015) & 0.499 (0.015) \\
-Born unregularized & 0.003 & 0.730 (0.020) & 0.520 (0.036) & 0.500 (0.026) & 0.502 (0.014) \\
+Phase rotation, angle penalty & 0.003 & 0.701 (0.048) & 0.505 (0.040) & 0.496 (0.007) & 0.503 (0.009) \\
+Phase rotation, exact angles & 0.001 & 0.492 (0.021) & 0.500 (0.020) & 0.491 (0.015) & 0.499 (0.015) \\
+Phase rotation, unregularized & 0.003 & 0.730 (0.020) & 0.520 (0.036) & 0.500 (0.026) & 0.502 (0.014) \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -64,9 +63,9 @@ DeltaNet adapter & 0.003 & 0.458 (0.069) & 0.345 (0.014) & 0.336 (0.018) & 0.326
 DeltaProduct adapter & 0.003 & 0.795 (0.284) & 0.513 (0.280) & 0.332 (0.400) & 0.378 (0.285) \\
 LSTM & 0.003 & 0.683 (0.332) & 0.663 (0.311) & 0.615 (0.310) & 0.576 (0.313) \\
 LSTM32 & 0.003 & 0.967 (0.071) & 0.964 (0.067) & 0.955 (0.076) & 0.944 (0.075) \\
-Born + soft reg. & 0.003 & 0.719 (0.019) & 0.321 (0.098) & 0.335 (0.023) & 0.335 (0.010) \\
-Born hard angles & 0.003 & 0.841 (0.283) & 0.827 (0.266) & 0.780 (0.251) & 0.699 (0.214) \\
-Born unregularized & 0.003 & 0.715 (0.035) & 0.345 (0.098) & 0.333 (0.036) & 0.325 (0.014) \\
+Phase rotation, angle penalty & 0.003 & 0.719 (0.019) & 0.321 (0.098) & 0.335 (0.023) & 0.335 (0.010) \\
+Phase rotation, exact angles & 0.003 & 0.841 (0.283) & 0.827 (0.266) & 0.780 (0.251) & 0.699 (0.214) \\
+Phase rotation, unregularized & 0.003 & 0.715 (0.035) & 0.345 (0.098) & 0.333 (0.036) & 0.325 (0.014) \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -85,9 +84,9 @@ DeltaNet adapter & 0.001 & 0.310 (0.083) & 0.247 (0.006) & 0.248 (0.021) & 0.258
 DeltaProduct adapter & 0.001 & 0.486 (0.306) & 0.450 (0.328) & 0.429 (0.278) & 0.322 (0.094) \\
 LSTM & 0.001 & 0.702 (0.406) & 0.694 (0.411) & 0.696 (0.402) & 0.678 (0.414) \\
 LSTM32 & 0.003 & 0.765 (0.345) & 0.771 (0.333) & 0.773 (0.323) & 0.756 (0.338) \\
-Born + soft reg. & 0.003 & 0.689 (0.092) & 0.351 (0.179) & 0.303 (0.072) & 0.248 (0.008) \\
-Born hard angles & 0.003 & 0.884 (0.079) & 0.859 (0.065) & 0.788 (0.084) & 0.562 (0.081) \\
-Born unregularized & 0.003 & 0.724 (0.016) & 0.416 (0.067) & 0.271 (0.067) & 0.239 (0.006) \\
+Phase rotation, angle penalty & 0.003 & 0.689 (0.092) & 0.351 (0.179) & 0.303 (0.072) & 0.248 (0.008) \\
+Phase rotation, exact angles & 0.003 & 0.884 (0.079) & 0.859 (0.065) & 0.788 (0.084) & 0.562 (0.081) \\
+Phase rotation, unregularized & 0.003 & 0.724 (0.016) & 0.416 (0.067) & 0.271 (0.067) & 0.239 (0.006) \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -106,55 +105,59 @@ DeltaNet adapter & 0.003 & 0.388 (0.090) & 0.194 (0.010) & 0.195 (0.013) & 0.203
 DeltaProduct adapter & 0.001 & 0.808 (0.228) & 0.646 (0.406) & 0.635 (0.411) & 0.571 (0.347) \\
 LSTM & 0.003 & 0.476 (0.336) & 0.367 (0.354) & 0.359 (0.359) & 0.352 (0.362) \\
 LSTM32 & 0.001 & 0.999 (0.001) & 0.999 (0.001) & 0.998 (0.005) & 0.994 (0.011) \\
-Born + soft reg. & 0.003 & 0.791 (0.140) & 0.647 (0.346) & 0.595 (0.309) & 0.252 (0.079) \\
-Born hard angles & 0.003 & 0.946 (0.085) & 0.948 (0.077) & 0.720 (0.250) & 0.400 (0.258) \\
-Born unregularized & 0.003 & 0.712 (0.097) & 0.457 (0.233) & 0.498 (0.222) & 0.162 (0.082) \\
+Phase rotation, angle penalty & 0.003 & 0.791 (0.140) & 0.647 (0.346) & 0.595 (0.309) & 0.252 (0.079) \\
+Phase rotation, exact angles & 0.003 & 0.946 (0.085) & 0.948 (0.077) & 0.720 (0.250) & 0.400 (0.258) \\
+Phase rotation, unregularized & 0.003 & 0.712 (0.097) & 0.457 (0.233) & 0.498 (0.222) & 0.162 (0.082) \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\myparagraph{Valve protocol and optimization sensitivity.}
-The complete policy learns from terminal reward on the operate task described
-above. The validation-only selection protocol is identical across families,
-using the last three $K=8$ evaluations. It was added after observing fixed-recipe
-results, and is not preregistered. Selection with a 4,000-update budget can favor
-a learning rate that is weaker after 6,000 updates; we therefore also retain
-the full fixed-$0.003$ study rather than reporting only selected baselines.
-Each selected-policy test uses 4,096 episodes per seed and condition. The
-programmed oracle succeeds on every evaluated horizon; the learned classical
-counter is a separate model that learns observation-conditioned cyclic belief
-updates and an action head. Twenty animated episodes per horizon ($K=8,32$)
-for each of 25 fixed-recipe policies give 1,000 simulator episodes. These use
-scripted valve poses and do not establish contact-driven manipulation.
+\myparagraph{Valve training and evaluation.}
+The policies learn from terminal reward on the operate task. In the re-tuned
+comparison (Table~\ref{tab:valve}), every family receives 12{,}000 A2C updates
+and the learning-rate grid $\{3\times10^{-4},10^{-3},3\times10^{-3},10^{-2}\}$.
+The GRU and LSTM also use widths 16, 32, and 64. Selection uses $N=8$ success
+on tuning seeds 100 and 101. The selected learning rates are evaluated on five
+fresh seeds (0--4), with 4{,}096 balanced greedy episodes per seed and horizon.
+The programmed counter succeeds on every horizon. The learned cyclic counter
+learns observation-conditioned cyclic belief updates and an action head.
+
+Table~\ref{tab:valve-original} reports the original-budget comparison, with
+4,000 updates for tuning and 6,000 in the final run. Selection averaged the last
+three $N=8$ validation evaluations. The validation-based run followed the
+fixed-rate experiment in Table~\ref{tab:valvefixed}. Twenty animated episodes
+per horizon ($N=8,32$) for each of 25 fixed-rate policies give 1,000 simulator
+episodes. Appendix~\ref{app:robot} describes the simulator.
+
+\input{tables/tab_valve_original}
 
 \begin{table}[tbp]
 \centering\small
-\caption{Fixed-rate ($0.003$) valve controls, retained to expose tuning sensitivity.}
+\caption{Valve control with learning rate $0.003$.}
 \label{tab:valvefixed}
 \setlength{\tabcolsep}{3pt}
 \begin{tabular}{lccc}
 \toprule
-Policy & $K=8$ & $K=32$ & $K=128$ \\
+Policy & $N=8$ & $N=32$ & $N=128$ \\
 \midrule
-Born16 & 1.000 (0.000) & 0.998 (0.003) & 0.749 (0.351) \\
-Born + soft reg.16 & 0.899 (0.222) & 0.454 (0.179) & 0.119 (0.089) \\
-GRU32 & 0.395 (0.148) & 0.401 (0.134) & 0.376 (0.121) \\
-LSTM16 & 0.499 (0.004) & 0.502 (0.012) & 0.454 (0.112) \\
-LSTM32 & 0.561 (0.174) & 0.546 (0.146) & 0.510 (0.072) \\
+Phase rotation ($H=16$) & 1.000 (0.000) & 0.998 (0.003) & 0.749 (0.351) \\
+Phase rotation, angle penalty ($H=16$) & 0.899 (0.222) & 0.454 (0.179) & 0.119 (0.089) \\
+GRU ($H=32$) & 0.395 (0.148) & 0.401 (0.134) & 0.376 (0.121) \\
+LSTM ($H=16$) & 0.499 (0.004) & 0.502 (0.012) & 0.454 (0.112) \\
+LSTM ($H=32$) & 0.561 (0.174) & 0.546 (0.146) & 0.510 (0.072) \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \myparagraph{Image observations.}
 A shared CNN and the memory are trained jointly from raw MNIST images. Odd
-digits constitute latent events; only terminal reward supervises their count
-modulo $k$. There is no digit-classification loss or pretrained perception.
-Training uses the first 50,000 training images; validation uses the remaining
-10,000; evaluation uses the separate official test set. Training lengths
+digits constitute latent events. Only terminal reward supervises their count
+modulo $k$. The first 50,000 training images are used for training and the
+remaining 10,000 for validation. Evaluation uses the official test set. Training lengths
 $1,2,4,6,8$ include short credit-assignment paths. A2C uses batch 128, learning
-rate $0.001$, and 6,000 updates; evaluation uses 2,048 episodes per seed.
-The unregularized variant was added after initial failures; both variants
-are retained. These tests do not establish broad visual robustness.
+rate $0.001$, and 6,000 updates. Evaluation uses 2,048 episodes per seed.
+Table~\ref{tab:newvision} reports the image experiment for both phase-rotation
+variants and the other tested models.
 
 \begin{table}[tbp]
 \centering\small
@@ -171,10 +174,10 @@ DeltaProduct adapter / 2 & 0.987 (0.003) & 0.895 (0.019) & 0.652 (0.030) & 0.541
 DeltaProduct adapter / 3 & 0.988 (0.005) & 0.909 (0.024) & 0.528 (0.042) & 0.316 (0.040) \\
 LSTM32 / 2 & 0.991 (0.001) & 0.929 (0.009) & 0.741 (0.029) & 0.613 (0.034) \\
 LSTM32 / 3 & 0.989 (0.002) & 0.909 (0.010) & 0.647 (0.017) & 0.490 (0.013) \\
-Born + soft reg. / 2 & 0.982 (0.005) & 0.673 (0.024) & 0.500 (0.013) & 0.500 (0.019) \\
-Born + soft reg. / 3 & 0.983 (0.003) & 0.689 (0.019) & 0.329 (0.007) & 0.334 (0.010) \\
-Born unregularized / 2 & 0.983 (0.007) & 0.668 (0.034) & 0.509 (0.012) & 0.494 (0.014) \\
-Born unregularized / 3 & 0.983 (0.003) & 0.666 (0.032) & 0.334 (0.010) & 0.338 (0.010) \\
+Phase rotation, angle penalty / 2 & 0.982 (0.005) & 0.673 (0.024) & 0.500 (0.013) & 0.500 (0.019) \\
+Phase rotation, angle penalty / 3 & 0.983 (0.003) & 0.689 (0.019) & 0.329 (0.007) & 0.334 (0.010) \\
+Phase rotation, unregularized / 2 & 0.983 (0.007) & 0.668 (0.034) & 0.509 (0.012) & 0.494 (0.014) \\
+Phase rotation, unregularized / 3 & 0.983 (0.003) & 0.666 (0.032) & 0.334 (0.010) & 0.338 (0.010) \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -182,18 +185,18 @@ Born unregularized / 3 & 0.983 (0.003) & 0.666 (0.032) & 0.334 (0.010) & 0.338 (
 \myparagraph{Frozen-state supervised probes.}
 We freeze identical recurrence checkpoints and fit readout heads on the same
 6,144 labelled examples, using identical minibatch index streams for 6,000 Adam
-updates at learning rate $0.003$. This is supervised fitting, not RL learning.
+updates at learning rate $0.003$.
 The absolute-linear head sees all real and imaginary channels. The invariant
 quadratic head sees every pairwise relative-phase product and has more parameters.
-Both Born and invariant-quadratic heads fit the clean parity training set
-perfectly, yet differ in extrapolation. The apparent Born advantage at $L=80$
-weakens at $L=160$ and does not consistently extend to $k=3$ or noisy inputs.
-All 60 fitted heads were replayed, reproducing every test accuracy exactly.
-These results support a protocol-specific parameterization benefit, not necessity.
+Both the squared-amplitude and invariant quadratic readouts fit the clean
+parity training set perfectly. Table~\ref{tab:newfrozenclean} shows the
+squared-amplitude readout's clean parity advantage at $L=80$.
+Table~\ref{tab:newfrozen} reports the probes on noisy observations.
+Replaying all 60 fitted heads reproduces every test accuracy exactly.
 
 \begin{table}[tbp]
 \centering\small
-\caption{Clean frozen-state probes; 2,048 test examples per seed.}
+\caption{Clean frozen-state probes with 2,048 test examples per seed.}
 \label{tab:newfrozenclean}
 \setlength{\tabcolsep}{3pt}
 \begin{tabular}{lcccc}
@@ -201,11 +204,11 @@ These results support a protocol-specific parameterization benefit, not necessit
 $k$ / head & $L=14$ & $L=40$ & $L=80$ & $L=160$ \\
 \midrule
 2 / Original head & 1.000 (0.000) & 1.000 (0.000) & 0.904 (0.215) & 0.484 (0.469) \\
-2 / Born & 1.000 (0.000) & 1.000 (0.000) & 0.999 (0.003) & 0.586 (0.442) \\
+2 / Squared-amplitude readout & 1.000 (0.000) & 1.000 (0.000) & 0.999 (0.003) & 0.586 (0.442) \\
 2 / Absolute linear & 0.504 (0.132) & 0.480 (0.041) & 0.486 (0.058) & 0.508 (0.031) \\
 2 / Invariant quadratic & 1.000 (0.000) & 1.000 (0.000) & 0.757 (0.408) & 0.496 (0.396) \\
 3 / Original head & 0.906 (0.092) & 0.715 (0.275) & 0.630 (0.358) & 0.573 (0.352) \\
-3 / Born & 0.968 (0.045) & 0.652 (0.349) & 0.596 (0.374) & 0.599 (0.365) \\
+3 / Squared-amplitude readout & 0.968 (0.045) & 0.652 (0.349) & 0.596 (0.374) & 0.599 (0.365) \\
 3 / Absolute linear & 1.000 (0.001) & 0.738 (0.331) & 0.588 (0.400) & 0.556 (0.412) \\
 3 / Invariant quadratic & 1.000 (0.000) & 0.802 (0.257) & 0.621 (0.401) & 0.563 (0.405) \\
 \bottomrule
@@ -214,7 +217,7 @@ $k$ / head & $L=14$ & $L=40$ & $L=80$ & $L=160$ \\
 
 \begin{table}[tbp]
 \centering\small
-\caption{Noisy frozen-state probes; 2,048 test examples per seed.}
+\caption{Noisy frozen-state probes with 2,048 test examples per seed.}
 \label{tab:newfrozen}
 \setlength{\tabcolsep}{3pt}
 \begin{tabular}{lcccc}
@@ -222,13 +225,242 @@ $k$ / head & $L=14$ & $L=40$ & $L=80$ & $L=160$ \\
 $k$ / head & $L=14$ & $L=40$ & $L=80$ & $L=160$ \\
 \midrule
 3 / Original head & 0.713 (0.015) & 0.324 (0.095) & 0.331 (0.011) & 0.330 (0.008) \\
-3 / Born & 0.711 (0.009) & 0.340 (0.068) & 0.332 (0.011) & 0.328 (0.010) \\
+3 / Squared-amplitude readout & 0.711 (0.009) & 0.340 (0.068) & 0.332 (0.011) & 0.328 (0.010) \\
 3 / Absolute linear & 0.456 (0.190) & 0.363 (0.056) & 0.337 (0.011) & 0.331 (0.009) \\
 3 / Invariant quadratic & 0.700 (0.018) & 0.359 (0.047) & 0.329 (0.017) & 0.336 (0.009) \\
 4 / Original head & 0.660 (0.067) & 0.402 (0.070) & 0.286 (0.059) & 0.253 (0.010) \\
-4 / Born & 0.703 (0.021) & 0.424 (0.057) & 0.285 (0.061) & 0.256 (0.013) \\
+4 / Squared-amplitude readout & 0.703 (0.021) & 0.424 (0.057) & 0.285 (0.061) & 0.256 (0.013) \\
 4 / Absolute linear & 0.713 (0.009) & 0.375 (0.113) & 0.253 (0.091) & 0.257 (0.013) \\
 4 / Invariant quadratic & 0.710 (0.008) & 0.398 (0.082) & 0.265 (0.080) & 0.260 (0.006) \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\FloatBarrier
+\section{Full increment uncertainty sweep}
+\label{app:sweep}
+
+Section~\ref{sec:sweep} describes the shared training protocol. In the missing
+regime, the pointer reports the true position with probability $0.8$ and
+draws a uniform token otherwise. The GRU and LSTM use widths 16 and 13, with
+1{,}844 and 1{,}812 parameters. The learned-angle and measured-angle rotations
+use 1{,}088 and 1{,}248 parameters, respectively. The cyclic filters use
+196--197 parameters. Matched Bayes uses the simulator probabilities directly.
+The measured-angle rotation uses a learned angle on erased turns and a learned
+input term on steps with an erasure or a pointer reading.
+
+Tables~\ref{tab:sweep-inc-dense}, \ref{tab:sweep-inc-terminal}, and
+\ref{tab:sweep-inc-reward} give the increments results at $L=40$ for each
+training signal. Table~\ref{tab:sweep-inc-long} extends the clean comparison
+to $L=160$. Tables~\ref{tab:sweep-missing-dense},
+\ref{tab:sweep-missing-terminal}, and \ref{tab:sweep-missing-reward} give the
+missing-regime results. In each cell the first line gives mean terminal NLL in
+nats with its SD in parentheses. The second line gives mean accuracy. Results
+use five test seeds and 1{,}024 episodes per seed and cell.
+
+\newcommand{\sweepcell}[3]{\shortstack{#1 (#2)\\#3}}
+
+\begin{table}[!htbp]
+\centering\small
+\caption{Increments regime at $L=40$ with dense training.}
+\label{tab:sweep-inc-dense}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Estimator & $r=0.0$ & $r=0.005$ & $r=0.01$ & $r=0.02$ & $r=0.05$ \\
+\midrule
+GRU & \sweepcell{0.000}{0.000}{1.000} & \sweepcell{0.773}{0.054}{0.820} & \sweepcell{1.062}{0.050}{0.682} & \sweepcell{1.304}{0.056}{0.503} & \sweepcell{1.395}{0.006}{0.276} \\
+\addlinespace[2pt]
+LSTM & \sweepcell{0.000}{0.000}{1.000} & \sweepcell{0.802}{0.068}{0.819} & \sweepcell{1.159}{0.020}{0.679} & \sweepcell{1.386}{0.056}{0.501} & \sweepcell{1.425}{0.026}{0.282} \\
+\addlinespace[2pt]
+Phase rotation (learned angle) & \sweepcell{0.003}{0.002}{1.000} & \sweepcell{0.988}{0.151}{0.669} & \sweepcell{1.412}{0.119}{0.417} & \sweepcell{1.539}{0.194}{0.317} & \sweepcell{1.590}{0.172}{0.239} \\
+\addlinespace[2pt]
+Phase rotation (measured angle) & \sweepcell{0.000}{0.000}{1.000} & \sweepcell{0.862}{0.064}{0.820} & \sweepcell{1.309}{0.068}{0.683} & \sweepcell{1.739}{0.053}{0.512} & \sweepcell{1.954}{0.039}{0.295} \\
+\addlinespace[2pt]
+Cyclic filter (token-constrained) & \sweepcell{0.000}{0.000}{1.000} & \sweepcell{3.310}{0.241}{0.820} & \sweepcell{5.839}{0.187}{0.683} & \sweepcell{8.991}{0.250}{0.512} & \sweepcell{12.984}{0.219}{0.295} \\
+\addlinespace[2pt]
+Cyclic filter (unconstrained) & \sweepcell{0.000}{0.000}{1.000} & \sweepcell{0.664}{0.035}{0.820} & \sweepcell{0.967}{0.019}{0.683} & \sweepcell{1.225}{0.013}{0.512} & \sweepcell{1.381}{0.004}{0.295} \\
+\addlinespace[2pt]
+Cyclic filter (misread-aware) & \sweepcell{0.012}{0.000}{1.000} & \sweepcell{0.664}{0.035}{0.820} & \sweepcell{0.966}{0.017}{0.683} & \sweepcell{1.224}{0.013}{0.512} & \sweepcell{1.380}{0.003}{0.295} \\
+\addlinespace[2pt]
+\midrule
+Matched Bayes & \sweepcell{0.000}{0.000}{1.000} & \sweepcell{0.664}{0.035}{0.820} & \sweepcell{0.965}{0.018}{0.683} & \sweepcell{1.224}{0.013}{0.512} & \sweepcell{1.380}{0.003}{0.295} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[!htbp]
+\centering\small
+\caption{Increments regime at $L=40$ with terminal training.}
+\label{tab:sweep-inc-terminal}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Estimator & $r=0.0$ & $r=0.005$ & $r=0.01$ & $r=0.02$ & $r=0.05$ \\
+\midrule
+GRU & \sweepcell{1.386}{0.001}{0.255} & \sweepcell{1.388}{0.002}{0.245} & \sweepcell{1.387}{0.000}{0.251} & \sweepcell{1.386}{0.000}{0.254} & \sweepcell{1.386}{0.000}{0.254} \\
+\addlinespace[2pt]
+LSTM & \sweepcell{1.386}{0.000}{0.255} & \sweepcell{1.387}{0.000}{0.245} & \sweepcell{1.386}{0.000}{0.257} & \sweepcell{1.386}{0.001}{0.249} & \sweepcell{1.386}{0.000}{0.249} \\
+\addlinespace[2pt]
+Phase rotation (learned angle) & \sweepcell{1.387}{0.001}{0.255} & \sweepcell{1.388}{0.003}{0.253} & \sweepcell{1.387}{0.002}{0.252} & \sweepcell{1.387}{0.001}{0.254} & \sweepcell{1.388}{0.003}{0.254} \\
+\addlinespace[2pt]
+Phase rotation (measured angle) & \sweepcell{0.000}{0.000}{1.000} & \sweepcell{0.777}{0.056}{0.820} & \sweepcell{1.161}{0.036}{0.683} & \sweepcell{1.482}{0.040}{0.512} & \sweepcell{1.624}{0.029}{0.295} \\
+\addlinespace[2pt]
+Cyclic filter (token-constrained) & \sweepcell{0.000}{0.000}{1.000} & \sweepcell{3.310}{0.241}{0.820} & \sweepcell{5.839}{0.187}{0.683} & \sweepcell{8.991}{0.250}{0.512} & \sweepcell{12.984}{0.219}{0.295} \\
+\addlinespace[2pt]
+Cyclic filter (unconstrained) & \sweepcell{0.000}{0.000}{1.000} & \sweepcell{0.670}{0.036}{0.820} & \sweepcell{0.971}{0.016}{0.683} & \sweepcell{1.229}{0.012}{0.512} & \sweepcell{1.381}{0.005}{0.295} \\
+\addlinespace[2pt]
+Cyclic filter (misread-aware) & \sweepcell{0.011}{0.000}{1.000} & \sweepcell{0.664}{0.035}{0.820} & \sweepcell{0.966}{0.018}{0.683} & \sweepcell{1.224}{0.013}{0.512} & \sweepcell{1.380}{0.003}{0.295} \\
+\addlinespace[2pt]
+\midrule
+Matched Bayes & \sweepcell{0.000}{0.000}{1.000} & \sweepcell{0.664}{0.035}{0.820} & \sweepcell{0.965}{0.018}{0.683} & \sweepcell{1.224}{0.013}{0.512} & \sweepcell{1.380}{0.003}{0.295} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[!htbp]
+\centering\small
+\caption{Increments regime at $L=40$ with reward training.}
+\label{tab:sweep-inc-reward}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Estimator & $r=0.0$ & $r=0.005$ & $r=0.01$ & $r=0.02$ & $r=0.05$ \\
+\midrule
+GRU & \sweepcell{7.503}{1.227}{0.255} & \sweepcell{2.152}{1.038}{0.260} & \sweepcell{7.510}{0.670}{0.252} & \sweepcell{7.610}{1.626}{0.250} & \sweepcell{4.247}{1.126}{0.252} \\
+\addlinespace[2pt]
+LSTM & \sweepcell{1.634}{0.351}{0.250} & \sweepcell{4.973}{3.356}{0.247} & \sweepcell{1.937}{0.373}{0.242} & \sweepcell{1.594}{0.338}{0.244} & \sweepcell{1.610}{0.330}{0.244} \\
+\addlinespace[2pt]
+Phase rotation (learned angle) & \sweepcell{2.418}{0.608}{0.244} & \sweepcell{2.311}{0.802}{0.264} & \sweepcell{2.365}{0.308}{0.244} & \sweepcell{2.342}{0.693}{0.237} & \sweepcell{2.670}{0.602}{0.245} \\
+\addlinespace[2pt]
+Phase rotation (measured angle) & \sweepcell{0.002}{0.001}{1.000} & \sweepcell{1.427}{0.114}{0.820} & \sweepcell{2.494}{0.164}{0.683} & \sweepcell{3.935}{0.246}{0.512} & \sweepcell{5.526}{0.278}{0.295} \\
+\addlinespace[2pt]
+Cyclic filter (token-constrained) & \sweepcell{0.000}{0.000}{1.000} & \sweepcell{3.310}{0.241}{0.820} & \sweepcell{5.839}{0.187}{0.683} & \sweepcell{8.991}{0.250}{0.512} & \sweepcell{12.984}{0.219}{0.295} \\
+\addlinespace[2pt]
+Cyclic filter (unconstrained) & \sweepcell{0.002}{0.000}{1.000} & \sweepcell{1.357}{0.086}{0.820} & \sweepcell{2.379}{0.103}{0.683} & \sweepcell{5.533}{0.227}{0.512} & \sweepcell{5.057}{0.240}{0.295} \\
+\addlinespace[2pt]
+Cyclic filter (misread-aware) & \sweepcell{0.314}{0.002}{1.000} & \sweepcell{0.686}{0.028}{0.820} & \sweepcell{0.972}{0.021}{0.683} & \sweepcell{1.330}{0.024}{0.512} & \sweepcell{1.773}{0.024}{0.295} \\
+\addlinespace[2pt]
+\midrule
+Matched Bayes & \sweepcell{0.000}{0.000}{1.000} & \sweepcell{0.664}{0.035}{0.820} & \sweepcell{0.965}{0.018}{0.683} & \sweepcell{1.224}{0.013}{0.512} & \sweepcell{1.380}{0.003}{0.295} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[!htbp]
+\centering\small
+\caption{Increments regime at $L=160$ with $r=0$ across training signals.}
+\label{tab:sweep-inc-long}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Estimator & Dense & Terminal & Reward \\
+\midrule
+GRU & \sweepcell{0.000}{0.000}{1.000} & \sweepcell{1.388}{0.002}{0.244} & \sweepcell{7.545}{1.268}{0.254} \\
+\addlinespace[2pt]
+LSTM & \sweepcell{0.007}{0.016}{0.999} & \sweepcell{1.387}{0.001}{0.243} & \sweepcell{1.672}{0.409}{0.235} \\
+\addlinespace[2pt]
+Phase rotation (learned angle) & \sweepcell{0.149}{0.115}{0.991} & \sweepcell{1.389}{0.003}{0.243} & \sweepcell{2.450}{0.647}{0.246} \\
+\addlinespace[2pt]
+Phase rotation (measured angle) & \sweepcell{0.000}{0.000}{1.000} & \sweepcell{0.000}{0.000}{1.000} & \sweepcell{0.002}{0.001}{1.000} \\
+\addlinespace[2pt]
+Cyclic filter (token-constrained) & \sweepcell{0.000}{0.000}{1.000} & \sweepcell{0.000}{0.000}{1.000} & \sweepcell{0.000}{0.000}{1.000} \\
+\addlinespace[2pt]
+Cyclic filter (unconstrained) & \sweepcell{0.000}{0.000}{1.000} & \sweepcell{0.000}{0.000}{1.000} & \sweepcell{0.006}{0.001}{1.000} \\
+\addlinespace[2pt]
+Cyclic filter (misread-aware) & \sweepcell{0.049}{0.001}{1.000} & \sweepcell{0.044}{0.001}{1.000} & \sweepcell{0.973}{0.003}{1.000} \\
+\addlinespace[2pt]
+\midrule
+Matched Bayes & \sweepcell{0.000}{0.000}{1.000} & \sweepcell{0.000}{0.000}{1.000} & \sweepcell{0.000}{0.000}{1.000} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[!htbp]
+\centering\small
+\caption{Missing regime at $L=160$ with dense training.}
+\label{tab:sweep-missing-dense}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Estimator & $r=0.0$ & $r=0.05$ & $r=0.1$ & $r=0.2$ & $r=0.3$ \\
+\midrule
+GRU & \sweepcell{0.845}{0.034}{0.678} & \sweepcell{1.051}{0.020}{0.582} & \sweepcell{1.131}{0.012}{0.523} & \sweepcell{1.236}{0.017}{0.424} & \sweepcell{1.266}{0.005}{0.374} \\
+\addlinespace[2pt]
+LSTM & \sweepcell{0.848}{0.030}{0.676} & \sweepcell{1.052}{0.024}{0.584} & \sweepcell{1.129}{0.011}{0.525} & \sweepcell{1.235}{0.017}{0.425} & \sweepcell{1.266}{0.005}{0.369} \\
+\addlinespace[2pt]
+Phase rotation (learned angle) & \sweepcell{0.850}{0.030}{0.678} & \sweepcell{1.052}{0.021}{0.574} & \sweepcell{1.142}{0.011}{0.520} & \sweepcell{1.236}{0.016}{0.423} & \sweepcell{1.266}{0.006}{0.377} \\
+\addlinespace[2pt]
+Phase rotation (measured angle) & \sweepcell{0.844}{0.032}{0.675} & \sweepcell{1.067}{0.025}{0.575} & \sweepcell{1.155}{0.012}{0.516} & \sweepcell{1.281}{0.013}{0.421} & \sweepcell{1.313}{0.009}{0.382} \\
+\addlinespace[2pt]
+Cyclic filter (token-constrained) & \sweepcell{0.834}{0.032}{0.685} & \sweepcell{1.058}{0.025}{0.583} & \sweepcell{1.161}{0.009}{0.529} & \sweepcell{1.290}{0.012}{0.424} & \sweepcell{1.341}{0.004}{0.375} \\
+\addlinespace[2pt]
+Cyclic filter (unconstrained) & \sweepcell{0.835}{0.032}{0.685} & \sweepcell{1.045}{0.022}{0.583} & \sweepcell{1.125}{0.009}{0.529} & \sweepcell{1.234}{0.014}{0.425} & \sweepcell{1.263}{0.005}{0.382} \\
+\addlinespace[2pt]
+Cyclic filter (misread-aware) & \sweepcell{0.834}{0.032}{0.685} & \sweepcell{1.045}{0.022}{0.583} & \sweepcell{1.125}{0.009}{0.529} & \sweepcell{1.233}{0.014}{0.427} & \sweepcell{1.263}{0.005}{0.380} \\
+\addlinespace[2pt]
+\midrule
+Matched Bayes & \sweepcell{0.834}{0.032}{0.685} & \sweepcell{1.045}{0.022}{0.583} & \sweepcell{1.125}{0.009}{0.529} & \sweepcell{1.233}{0.015}{0.427} & \sweepcell{1.263}{0.005}{0.383} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[!htbp]
+\centering\small
+\caption{Missing regime at $L=160$ with terminal training.}
+\label{tab:sweep-missing-terminal}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Estimator & $r=0.0$ & $r=0.05$ & $r=0.1$ & $r=0.2$ & $r=0.3$ \\
+\midrule
+GRU & \sweepcell{0.841}{0.034}{0.680} & \sweepcell{1.053}{0.024}{0.580} & \sweepcell{1.130}{0.012}{0.522} & \sweepcell{1.237}{0.014}{0.428} & \sweepcell{1.266}{0.004}{0.380} \\
+\addlinespace[2pt]
+LSTM & \sweepcell{0.841}{0.034}{0.680} & \sweepcell{1.052}{0.025}{0.578} & \sweepcell{1.131}{0.011}{0.522} & \sweepcell{1.237}{0.014}{0.420} & \sweepcell{1.264}{0.007}{0.380} \\
+\addlinespace[2pt]
+Phase rotation (learned angle) & \sweepcell{0.867}{0.030}{0.677} & \sweepcell{1.065}{0.021}{0.579} & \sweepcell{1.154}{0.011}{0.512} & \sweepcell{1.246}{0.016}{0.424} & \sweepcell{1.271}{0.005}{0.378} \\
+\addlinespace[2pt]
+Phase rotation (measured angle) & \sweepcell{0.846}{0.033}{0.672} & \sweepcell{1.063}{0.024}{0.571} & \sweepcell{1.153}{0.011}{0.515} & \sweepcell{1.276}{0.010}{0.421} & \sweepcell{1.311}{0.007}{0.376} \\
+\addlinespace[2pt]
+Cyclic filter (token-constrained) & \sweepcell{0.834}{0.033}{0.685} & \sweepcell{1.056}{0.023}{0.583} & \sweepcell{1.156}{0.009}{0.529} & \sweepcell{1.283}{0.011}{0.424} & \sweepcell{1.333}{0.003}{0.377} \\
+\addlinespace[2pt]
+Cyclic filter (unconstrained) & \sweepcell{0.834}{0.032}{0.685} & \sweepcell{1.045}{0.022}{0.583} & \sweepcell{1.125}{0.009}{0.528} & \sweepcell{1.235}{0.015}{0.427} & \sweepcell{1.263}{0.005}{0.383} \\
+\addlinespace[2pt]
+Cyclic filter (misread-aware) & \sweepcell{0.834}{0.033}{0.685} & \sweepcell{1.045}{0.022}{0.583} & \sweepcell{1.124}{0.009}{0.529} & \sweepcell{1.234}{0.014}{0.428} & \sweepcell{1.263}{0.005}{0.382} \\
+\addlinespace[2pt]
+\midrule
+Matched Bayes & \sweepcell{0.834}{0.032}{0.685} & \sweepcell{1.045}{0.022}{0.583} & \sweepcell{1.125}{0.009}{0.529} & \sweepcell{1.233}{0.015}{0.427} & \sweepcell{1.263}{0.005}{0.383} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[!htbp]
+\centering\small
+\caption{Missing regime at $L=160$ with reward training.}
+\label{tab:sweep-missing-reward}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Estimator & $r=0.0$ & $r=0.05$ & $r=0.1$ & $r=0.2$ & $r=0.3$ \\
+\midrule
+GRU & \sweepcell{5.557}{1.178}{0.538} & \sweepcell{5.710}{0.438}{0.484} & \sweepcell{6.497}{0.971}{0.445} & \sweepcell{7.329}{0.668}{0.379} & \sweepcell{5.081}{0.517}{0.356} \\
+\addlinespace[2pt]
+LSTM & \sweepcell{4.847}{0.818}{0.565} & \sweepcell{5.282}{0.719}{0.496} & \sweepcell{4.723}{0.705}{0.449} & \sweepcell{4.495}{0.448}{0.370} & \sweepcell{3.988}{0.379}{0.344} \\
+\addlinespace[2pt]
+Phase rotation (learned angle) & \sweepcell{1.322}{0.136}{0.682} & \sweepcell{1.476}{0.064}{0.579} & \sweepcell{1.930}{0.156}{0.525} & \sweepcell{1.962}{0.351}{0.421} & \sweepcell{1.803}{0.146}{0.346} \\
+\addlinespace[2pt]
+Phase rotation (measured angle) & \sweepcell{1.412}{0.196}{0.679} & \sweepcell{2.076}{0.150}{0.554} & \sweepcell{2.333}{0.147}{0.523} & \sweepcell{2.819}{0.101}{0.425} & \sweepcell{2.920}{0.212}{0.378} \\
+\addlinespace[2pt]
+Cyclic filter (token-constrained) & \sweepcell{0.878}{0.048}{0.685} & \sweepcell{1.226}{0.043}{0.583} & \sweepcell{2.000}{0.040}{0.529} & \sweepcell{1.749}{0.037}{0.424} & \sweepcell{1.915}{0.017}{0.375} \\
+\addlinespace[2pt]
+Cyclic filter (unconstrained) & \sweepcell{0.901}{0.054}{0.685} & \sweepcell{1.272}{0.046}{0.583} & \sweepcell{2.058}{0.040}{0.529} & \sweepcell{1.811}{0.036}{0.422} & \sweepcell{2.632}{0.031}{0.375} \\
+\addlinespace[2pt]
+Cyclic filter (misread-aware) & \sweepcell{0.853}{0.041}{0.685} & \sweepcell{1.148}{0.037}{0.583} & \sweepcell{1.323}{0.017}{0.529} & \sweepcell{1.574}{0.025}{0.424} & \sweepcell{1.637}{0.014}{0.375} \\
+\addlinespace[2pt]
+\midrule
+Matched Bayes & \sweepcell{0.834}{0.032}{0.685} & \sweepcell{1.045}{0.022}{0.583} & \sweepcell{1.125}{0.009}{0.529} & \sweepcell{1.233}{0.015}{0.427} & \sweepcell{1.263}{0.005}{0.383} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier

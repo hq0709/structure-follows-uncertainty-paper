@@ -1,0 +1,50 @@
+\section{Problem Setting}\label{sec:setting}
+\label{sec:prelim}
+\label{sec:problem}
+
+In the cyclic partially observable Markov decision process (POMDP), the latent
+position is $s_t\in\Z_k$, with known cycle size $k$ and positions numbered from
+$0$ to $k-1$ \citep{kaelbling1998pomdp}. The increment $j_t$ gives
+$s_t=(s_{t-1}+j_t)\bmod k$. An observation $o_t\in\R^n$ can contain a cue about
+$j_t$ and a pointer reading $y_t$ of the absolute position $s_t$. The agent can
+choose an action $a_t$ after observing $o_t$. In control, actions can affect the
+next increment or request a new pointer reading. The belief is the posterior
+probability of each position,
+\[
+b_t(s)=\Pr(s_t=s\mid o_{1:t}),
+\]
+with past actions included in the observation history for controlled sequences.
+A learned policy updates a memory $h_t=f_\phi(o_t,h_{t-1})$ and assigns action
+probabilities $\pi_\phi(a\mid h_t)$.
+
+\begin{enumerate}
+\item \textbf{Exactly observed increments.} The observation identifies each
+increment in the clean counting and valve tasks (Section~\ref{sec:rl}).
+\item \textbf{Noisy or missing increments.} Section~\ref{sec:sweep} varies
+token misreads in a controlled protocol. Section~\ref{sec:noisy} uses noisy
+event features, Section~\ref{sec:feedback} erases some tokens, and
+Section~\ref{sec:imu} obtains increments from a gyroscope.
+\item \textbf{Corrupted pointer readings.} The simulated valve pointer can
+report the wrong position (Section~\ref{sec:feedback}), and magnetic
+disturbance can corrupt the magnetometer heading (Section~\ref{sec:imu}).
+\end{enumerate}
+
+We evaluate belief estimates beyond the training lengths using the accuracy of
+the most probable position and the negative log likelihood (NLL) of the true
+position, $-\log b_t(s_t)$. The fixed shared planner selects actions from each
+estimator's belief to maximize expected net utility, defined as the success
+indicator minus the costs of turns and readings
+(Section~\ref{sec:regimes}).
+
+\myparagraph{Counting tasks.}
+In the \textbf{mod-$k$} task, each of the $L$ observations encodes a binary event
+bit $e_t\in\{0,1\}$. A single decision at the final step earns $+1$ for the
+correct count $a^\star=\big(\sum_{t=1}^{L} e_t\big)\bmod k$ and $-1$ otherwise.
+Parity is the case $k=2$. Models train on a bounded range of lengths and are
+evaluated on longer ones. On clean inputs, the programmed counter
+$c_t=(c_{t-1}+e_t)\bmod k$ is an exact oracle. The experiment tests whether a
+policy can learn the count from terminal reward. Two control tasks remove the
+cyclic structure. In the \textbf{cue} task a single informative bit appears at
+$t=1$. In the \textbf{monotone} task the agent reports whether the count exceeds
+$L/2$. Sections~\ref{sec:transfer} and~\ref{sec:feedback} describe the valve
+control and missing-event tasks.

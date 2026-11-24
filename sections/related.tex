@@ -1,0 +1,75 @@
+\section{Related Work}\label{sec:related}
+
+\myparagraph{Representing a cyclic state.}
+Unitary RNNs and oscillatory recurrences use norm-preserving or undamped
+dynamics \citep{arjovsky2016urnn,rusch2021cornn}. \citet{grazzi2025negative} give
+an exact two-coordinate rotation with a linear template decoder for modular
+counting. Our phase rotation uses the input-dependent rotation in the cyclic
+construction of \citet{karuvally2025aussm}. \citet{shakerinava2026diagonal}
+characterize complex diagonal state-space models for the broader Abelian case,
+and DeltaProduct uses products of Householder updates to track group elements
+\citep{siems2025deltaproduct}. Squared amplitudes also parameterize
+quantum-circuit policies \citep{jerbi2021parametrized}. We show that a rotation
+with a classical squared-amplitude readout learns exact tracking from terminal
+reward by taking its angle directly from the observed increment.
+
+\myparagraph{Counting on longer sequences.}
+Parity and modular counting are standard probes of length extrapolation
+\citep{deletang2023chomsky}. Transformers can fit these tasks through
+length-specific shortcuts \citep{liu2023shortcuts,zhou2024rasp}, and state-space
+models and Transformers face expressivity limits on group word problems
+\citep{merrill2024illusion}. Networks trained on modular arithmetic can learn
+Fourier features \citep{nanda2023grokking,chughtai2023universality,zhong2023clock},
+and residue hyperdimensional computing combines unit-root codes by phasor
+multiplication \citep{kymn2025residue}. We show that phase rotation extends
+terminal-reward counting beyond the training lengths and that a categorical
+count belief extends it to noisy event cues.
+
+\myparagraph{Memory and belief under partial observation.}
+Recurrent policies are a standard baseline for partially observed tasks
+\citep{hausknecht2015drqn,ni2022recurrent}. \citet{ni2023transformers} separate
+memory from credit assignment in evaluations of Transformer policies, and
+POPGym benchmarks memory architectures under partial observation
+\citep{morad2023popgym}. Reward machines learn automaton memory from experience
+\citep{icarte2019reward}, and probabilistic automata model hidden actions and
+occasional state reveals \citep{siems2026code}. \citet{lambrechts2022recurrent}
+find that hidden states of RNNs trained for Q-learning correlate with the
+decision-relevant part of the belief. \citet{zhao2026belief} relate recurrent
+memory to belief logits under deterministic transitions and extend their filters
+to action-controlled settings. We use a shared planner to show how more
+accurate cyclic beliefs improve utility by changing the decision to sense.
+
+\myparagraph{Differentiable Bayes filters.}
+Differentiable filters retain the algorithmic structure of Bayesian prediction
+and correction while learning parts of the update. Prior work has used
+histogram and particle representations
+\citep{jonschkowski2016histogram,jonschkowski2018dpf}, learned components of
+Kalman filters \citep{haarnoja2016backprop,revach2022kalmannet}, and compared
+training choices for differentiable filters \citep{kloss2021differentiable}.
+QMDP-Net embeds filtering and planning in a policy
+\citep{karkus2017qmdpnet}. Particle-based inference also appears in recurrent
+networks and variational reinforcement learning
+\citep{ma2020pfrnn,igl2018dvrl}. Our cyclic filter specializes the differentiable
+histogram filter of \citet{jonschkowski2016histogram} to a known cyclic group
+with exact shifts. We show that assigning probabilities to those shifts from
+a learned token misread model brings its beliefs close to matched Bayes under
+state supervision.
+
+\myparagraph{Circular filtering and harmonic representations.}
+Circular Bayesian filters use distributions defined directly on the circle
+\citep{kurz2016circular}, and harmonic exponential families use Fourier
+representations on manifolds \citep{cohen2015harmonic}. We show that a heading
+belief updated by harmonic shifts and a learned pointer likelihood matches the
+best neural tracking error under magnetic disturbance.
+
+\myparagraph{Inertial heading estimation.}
+RoNIN learns inertial navigation from IMU sequences \citep{herath2020ronin}.
+TLIO fuses learned displacement estimates in a filter \citep{liu2020tlio},
+and AI-IMU Dead-Reckoning learns to adapt filter noise parameters
+\citep{brossard2020aiimu}. Complementary filters combine gyroscope integration
+with gravity and magnetic references \citep{mahony2008complementary}. VQF adds
+gyroscope bias estimation and magnetic disturbance rejection
+\citep{laidig2023vqf}, and BROAD provides recordings with an optical orientation
+reference \citep{laidig2021broad}. On BROAD we show that supplying the
+integrated increment supports extrapolation across architectures and that a
+bias state driven by physical rest detection reduces heading error further.

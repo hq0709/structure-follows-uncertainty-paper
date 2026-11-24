@@ -1,19 +1,18 @@
-Many systems track a position on a known cycle, such as a valve setting or the
-heading of a sensor, from increments and occasional pointer readings. We ask
-whether cyclic structure helps a learned estimator more in its transition or in
-its belief update. In modular counting with clean inputs, letting the input set
-the angle of a phase rotation raises parity accuracy from $0.66$ to $0.996$ in a
-unit-modulus comparison. With noisy inputs, a model that updates a discrete
-count using event probabilities reaches $0.994$ accuracy at 160 steps. In a
-simulated valve with missing turns, cyclic filters achieve the lowest negative
-log likelihood among learned estimators. With the same planner, every learned
-model comes within $1.5$ percentage points of a Bayes reference across 75
-settings, and the clearest difference is whether the planner takes another
-reading. We then test the same structures on recorded data from a commercial
-inertial measurement unit. Models trained on 10~s windows estimate heading over
-240~s. A rotation set by the gyroscope heading increment gives $29.6^\circ$
-error, compared with $73.7^\circ$ for the best recurrent or attention model,
-and has lower negative log likelihood at every tested length. It matches direct
-integration of the increment, and a classical filter with gyroscope bias
-estimation remains more accurate. With magnetometer readings under magnetic
-disturbance, our cyclic filter only matches the neural networks.
+A known cyclic structure helps a learned estimator when it is placed at the
+source of uncertainty. An observed increment sets the angle of a phase
+rotation. An uncertain increment calls for a cyclic belief update that mixes
+exact shifts and corrects the resulting probabilities with pointer readings.
+In a controlled four-position valve task, exact cyclic updates reach $1.000$
+accuracy from a terminal label or reward, while standard recurrent models
+and a rotation with learned angles predict at chance level. At a token misread
+rate of $0.01$, the misread-aware filter achieves $0.966$ negative log likelihood
+from terminal labels, compared with $5.839$ for the filter that treats delivered
+tokens as exact. In valve control, phase rotation achieves $0.997$ success at
+four times the longest training horizon, compared with $0.801$ for the best
+budget-matched baseline. With a shared planner, the token-constrained filter
+improves utility over the GRU in 47 of 75 settings by paired bootstrap, with
+sensing decisions accounting for the clearest differences. On recorded
+inertial data, a rotation set by the gyroscope increment trained on 10~s windows
+tracks heading to $29.6^\circ$ error at 240~s. Supplying the same integration
+prior to a GRU gives $27.4^\circ$. Estimating gyroscope bias during detected rest
+reduces the rotation's error at 120~s from $20.2^\circ$ to $12.8^\circ$.

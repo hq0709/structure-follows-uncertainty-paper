@@ -1,0 +1,25 @@
+\begin{table}[!htbp]
+\centering\small
+\caption{Increments regime at $L=40$. Each cell gives mean terminal
+NLL (nats) / accuracy over five test seeds. Appendix~\ref{app:sweep}
+reports the full sweep and NLL standard deviations.}
+\label{tab:sweep}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+& \multicolumn{3}{c}{$r=0$} & \multicolumn{3}{c}{$r=0.01$} \\
+\cmidrule(lr){2-4}\cmidrule(l){5-7}
+Estimator & Dense & Terminal & Reward & Dense & Terminal & Reward \\
+\midrule
+GRU & $0.000\,/\,1.000$ & $1.386\,/\,0.255$ & $7.503\,/\,0.255$ & $1.062\,/\,0.682$ & $1.387\,/\,0.251$ & $7.510\,/\,0.252$ \\
+LSTM & $0.000\,/\,1.000$ & $1.386\,/\,0.255$ & $1.634\,/\,0.250$ & $1.159\,/\,0.679$ & $1.386\,/\,0.257$ & $1.937\,/\,0.242$ \\
+Phase rotation (learned angle) & $0.003\,/\,1.000$ & $1.387\,/\,0.255$ & $2.418\,/\,0.244$ & $1.412\,/\,0.417$ & $1.387\,/\,0.252$ & $2.365\,/\,0.244$ \\
+Phase rotation (measured angle) & $0.000\,/\,1.000$ & $0.000\,/\,1.000$ & $0.002\,/\,1.000$ & $1.309\,/\,0.683$ & $1.161\,/\,0.683$ & $2.494\,/\,0.683$ \\
+Cyclic filter (token-constrained) & $0.000\,/\,1.000$ & $0.000\,/\,1.000$ & $0.000\,/\,1.000$ & $5.839\,/\,0.683$ & $5.839\,/\,0.683$ & $5.839\,/\,0.683$ \\
+Cyclic filter (unconstrained) & $0.000\,/\,1.000$ & $0.000\,/\,1.000$ & $0.002\,/\,1.000$ & $0.967\,/\,0.683$ & $0.971\,/\,0.683$ & $2.379\,/\,0.683$ \\
+Cyclic filter (misread-aware) & $0.012\,/\,1.000$ & $0.011\,/\,1.000$ & $0.314\,/\,1.000$ & $0.966\,/\,0.683$ & $0.966\,/\,0.683$ & $0.972\,/\,0.683$ \\
+\midrule
+Matched Bayes & $0.000\,/\,1.000$ & $0.000\,/\,1.000$ & $0.000\,/\,1.000$ & $0.965\,/\,0.683$ & $0.965\,/\,0.683$ & $0.965\,/\,0.683$ \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -1,50 +1,30 @@
 \section{Two Cyclic Structures}
 \label{sec:method}
 
-\subsection{Tasks}
-\label{sec:prelim}
-\label{sec:problem}
-At each step $t$ the agent receives an observation $o_t\in\R^n$, updates a
-memory $h_t=f_\phi(o_t,h_{t-1})$, and assigns action probabilities
-$\pi_\phi(a\mid h_t)$. The true position is one of $k$ positions on a known
-cycle, and the memory may represent a single position or a probability over
-several.
-
-In the \textbf{mod-$k$} task, each of the $L$ observations encodes a binary event bit
-$b_t\in\{0,1\}$. A single decision at the final step earns $+1$ if it equals the
-running count $a^\star = \big(\sum_{t=1}^{L} b_t\big) \bmod k$ and $-1$ otherwise.
-Parity is the case $k=2$. Models train on a bounded range of lengths and are
-evaluated on longer ones. Two control tasks remove the cyclic structure: in the
-\textbf{cue} task a single informative bit appears at $t=1$, and in the
-\textbf{monotone} task the agent reports whether the count exceeds $L/2$. On
-clean inputs, the programmed counter $c_t=(c_{t-1}+b_t)\bmod k$ is an exact
-oracle, so the question is whether a policy can learn this counter from reward
-alone. Sections~\ref{sec:transfer} and~\ref{sec:feedback} introduce the valve
-and missing-event tasks.
-
 \subsection{An input-conditioned phase rotation}
 \label{sec:arch}
 If the $k$ positions are marked around a circle, increasing the count by one
-rotates a point by $2\pi/k$. We therefore keep a complex memory $z\in\C^d$ and,
-at each step, rotate each coordinate by an angle chosen from the observation
-before adding a learned input term:
+rotates a point by $2\pi/k$. The \emph{phase-rotation model} keeps a complex
+memory $z\in\C^H$ of width $H$. At each step it rotates each coordinate by an
+angle chosen from the observation and adds a learned input term.
 \begin{equation}
 z \;\leftarrow\; z \odot e^{\,i\,\theta(o_t)} \;+\; \mathrm{inj}(o_t),
 \qquad \theta(o)=W_\theta\, o,
 \label{eq:evolve}
 \end{equation}
-where $\odot$ denotes elementwise multiplication and $\theta(o)\in\R^d$ holds
-the rotation angles. The rotation preserves each coordinate's magnitude, so $k$
-advances of $2\pi/k$ return a coordinate exactly to its starting point; the
-additive term $\mathrm{inj}(o)\in\C^d$ lets the observation change the
-amplitudes as well. To read out an action, the model maps the state linearly to
-one complex amplitude $\psi_a$ per action and normalizes the squared magnitudes.
-We call this the Born readout:
+The symbol $\odot$ denotes elementwise multiplication, and
+$\theta(o)\in\R^H$ holds the rotation angles. The rotation preserves each
+coordinate's magnitude, and $k$ advances of $2\pi/k$ return a coordinate exactly
+to its starting point. The additive term $\mathrm{inj}(o)\in\C^H$ lets the
+observation change the amplitudes. The \emph{squared-amplitude readout} maps
+the state linearly to one complex amplitude $\psi_a$ per action and normalizes
+the squared magnitudes. This is the Born rule of quantum mechanics used as a
+classical readout.
 \begin{equation}
 \psi_a = \textstyle\sum_j w_{aj}\, z_j \in \C,
 \qquad
-\pi(a) = \frac{|\psi_a|^2}{\sum_b |\psi_b|^2}.
-\label{eq:born}
+\pi(a) = \frac{|\psi_a|^2}{\sum_{a'} |\psi_{a'}|^2}.
+\label{eq:squared-amplitude}
 \end{equation}
 An all-zero score vector falls back to the uniform distribution, and sampling
 floors probabilities at $10^{-8}$. When one coordinate stays fixed as a reference
@@ -52,17 +32,18 @@ and another rotates, the squared magnitude contains a term comparing their
 phases, and this term peaks at the action aligned with the accumulated rotation.
 Equivalently, the model is a real $SO(2)$ rotation with quadratic features.
 
-\begin{proposition}[Exact and length-invariant representation;
-cf.\ \citealp{grazzi2025negative,karuvally2025aussm}]
+\begin{proposition}[Exact and length-invariant representation]
 \label{prop:exact}
-A parameter setting of Equations~\eqref{eq:evolve} and \eqref{eq:born} with width
-$d=2$ makes the greedy action $\arg\max_a \pi(a)$ equal the true count $a^\star$ for
-every length $L$ and every input sequence $b_1,\dots,b_L$.
+A parameter setting of Equations~\eqref{eq:evolve} and
+\eqref{eq:squared-amplitude} with width $H=2$ makes the greedy action
+$\arg\max_a \pi(a)$ equal the true count $a^\star$ for every length $L$ and
+every input sequence $e_1,\dots,e_L$.
 \end{proposition}
 
-The proof is in Appendix~\ref{app:proofs}. The proposition shows that exact
-counting is representable; whether training finds such a setting is an empirical
-question. A classical relative-phase score
+The proof is in Appendix~\ref{app:proofs}. The construction uses the exact
+rotation also found in \citet{grazzi2025negative,karuvally2025aussm}.
+The proposition establishes representability. The experiments test whether
+training finds such a setting. A classical relative-phase score
 $\operatorname{Re}(\overline{z_0}z_1\omega^{-a})$ selects the same action.
 Appendix~\ref{app:proofs} also discusses the readout's global-phase invariance,
 and Appendix~\ref{app:contractive} shows that uniformly contractive memories
@@ -73,8 +54,8 @@ cannot keep a positive decoding margin over long common suffixes.
 In the curriculum experiments we renormalize $z\leftarrow z/\lVert z\rVert_2$
 after each step and add the penalty
 $\lambda\langle\sin^2(\tfrac{k}{2}\theta(o_t))\rangle$ to pull angles toward
-multiples of $2\pi/k$. Neither operation enforces exact angles, and a nonzero
-injection can also shift the phase. For the two-channel construction without
+multiples of $2\pi/k$. A learned angle and a nonzero injection can both
+contribute phase error. For the two-channel construction without
 injection, per-step phase errors of at most $\epsilon$ and an initial error $\epsilon_0$
 give angular error at most $\eta=\epsilon_0+L\epsilon$ after $L$ steps. Nearest-residue
 decoding stays correct for $\eta<\pi/k$, and with score perturbations of at most
@@ -83,21 +64,20 @@ larger cycles are harder to track with a learned angle.
 
 \subsection{A cyclic filter for uncertain increments}
 \label{sec:filter}
-A rotation carries a single count. Once an event may be missing or misread,
-the model needs a probability for each position instead. Starting at zero, for
-example, one missing turn leaves probability $0.50$ on position zero and $0.25$ on
-each of positions one and three; a pointer reading of one then makes position one
-more likely. A cyclic filter carries out these two steps as a prediction followed
-by a correction:
+With uncertain increments, the cyclic filter propagates a distribution over
+positions. Starting at zero, for example, one missing turn leaves probability
+$0.50$ on position zero and $0.25$ on each of positions one and three. A pointer
+reading of one then makes position one more likely. The cyclic filter makes a
+prediction and corrects it using the pointer likelihood.
 \begin{align}
-\tilde b_t &= \sum_{d} q_t(d)\, P_d\, b_{t-1},\label{eq:filter-predict}\\
+\tilde b_t &= \sum_j q_t(j)\, P_j\, b_{t-1},\label{eq:filter-predict}\\
 b_t(s) &\propto \tilde b_t(s)\, \ell_t(y_t\mid s).\label{eq:filter-correct}
 \end{align}
-Here $P_d$ shifts the belief $b$ around the cycle by $d$ positions, a learned
-event encoder supplies the probability $q_t(d)$ of each increment, and $\ell_t$
-is the likelihood of the pointer reading $y_t$ at position $s$; without a reading,
-$b_t=\tilde b_t$. Because the shifts are exact, only the event probabilities and
-the pointer likelihood need to be learned. The categorical counter of
+The operator $P_j$ shifts the belief by $j$ positions, and a learned event
+encoder supplies the increment probabilities $q_t(j)$. The likelihood $\ell_t$
+gives the probability of a pointer reading $y_t$ at position $s$. Without a reading,
+$b_t=\tilde b_t$. The filter learns the event probabilities and the pointer
+likelihood while applying exact shifts. The learned cyclic counter of
 Section~\ref{sec:noisy} is the special case without pointer readings. For a
 continuous increment $u_t$, the shift multiplies the belief's Fourier
 coefficients by $e^{-inu_t}$, so the filter applies the phase rotation of

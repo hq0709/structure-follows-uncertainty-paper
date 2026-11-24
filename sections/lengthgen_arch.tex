@@ -5,17 +5,15 @@ We separate supervised extrapolation from terminal-reward optimization. Each
 model observes a binary event sequence and receives a single label for the final
 residue. Every model minimizes terminal-label NLL for 22,000 Adam updates at
 learning rate $0.0015$, batch size 256, and lengths $4,6,\ldots,14$. The archived
-Born configuration uses an angle lattice and Fourier readout initialization.
+phase-rotation configuration uses an angle lattice and Fourier readout initialization.
 The comparison varies architectural priors, including the structure supplied
-to the Born model.
+to the phase-rotation model.
 
 Table~\ref{tab:lengthgen-arch} compares ten seeds at the common horizon $L=400$.
-GRU and LSTM nearly always learn to extrapolate at $k=3$--$5$, but rarely solve
-parity. No tested Transformer seed exceeds the threshold at $L=400$. The
-structured Born model solves a majority of seeds in each group, with lower
-reliability than GRU or LSTM at $k=4$. The recurrent models were also evaluated
-at $L=1600$. Their successful-seed counts for $k=2,3,4,5$ are
-$(9,9,6,9)$ for Born, $(0,10,10,9)$ for GRU, and $(1,9,10,10)$ for LSTM.
-The archived predictions reproduce the counts. The exact historical
-\texttt{born\_char} implementation is absent from the retained training source.
+The phase rotation with an angle lattice solves a majority of seeds at every
+cycle size. GRU and LSTM nearly always extrapolate at $k=3$--$5$ in this
+terminal-label protocol. The successful-seed counts at $L=1600$ for
+$k=2,3,4,5$ are
+$(9,9,6,9)$ for the phase-rotation model, $(0,10,10,9)$ for GRU, and $(1,9,10,10)$ for LSTM.
+The archived predictions reproduce the counts.
 \input{tables/tab_lengthgen_arch}

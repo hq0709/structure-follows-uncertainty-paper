@@ -1,27 +1,26 @@
-\begin{table}[!t]
+\begin{table}[!htbp]
 \centering\small
-\caption{Valve control after training on 1--8 intervening turns. The table gives
-greedy success at $K$ turns, as mean $\pm$ sample SD over five seeds (4,096
-episodes each). The number after a model name gives its width. Soft reg. uses an
-angle penalty, and LR is the validation-selected learning rate.
-A programmed counter succeeds at every horizon.}
+\caption{Re-tuned valve control after training on 1--8 intervening turns.
+Greedy success is mean $\pm$ sample SD over five seeds, with 4,096
+episodes per seed and horizon. LR is the validation-selected learning rate.}
 \label{tab:valve}
-\setlength{\tabcolsep}{7pt}
-\begin{tabular}{llcccc}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}llrrrr@{}}
 \toprule
-Memory type & Policy & LR & $K=8$ & $K=32$ & $K=128$ \\
+Memory type & Policy & LR & $N=8$ & $N=32$ & $N=128$ \\
 \midrule
-\multirow{2}{*}{Phase rotation} & Born16 & 0.003 & \textbf{1.000}\,$\pm$\,.000 & \textbf{.998}\,$\pm$\,.003 & \textbf{.749}\,$\pm$\,.351 \\
- & Born16 + soft reg. & 0.003 & .899\,$\pm$\,.222 & .454\,$\pm$\,.179 & .119\,$\pm$\,.089 \\
+Phase rotation & Phase rotation ($H=16$) & 0.003 & \textbf{1.000}\,$\pm$\,0.000 & \textbf{0.997}\,$\pm$\,0.005 & 0.673\,$\pm$\,0.244 \\
 \midrule
-Categorical & Learned cyclic counter & 0.003 & .567\,$\pm$\,.151 & .572\,$\pm$\,.158 & .553\,$\pm$\,.169 \\
+\multirow{6}{*}{Gated recurrence} & LSTM ($H=16$) & 0.01 & 0.915\,$\pm$\,0.106 & 0.801\,$\pm$\,0.136 & 0.637\,$\pm$\,0.253 \\
+ & LSTM ($H=32$) & 0.01 & 0.796\,$\pm$\,0.269 & 0.735\,$\pm$\,0.249 & \textbf{0.684}\,$\pm$\,0.284 \\
+ & LSTM ($H=64$) & 0.003 & 0.669\,$\pm$\,0.228 & 0.633\,$\pm$\,0.183 & 0.559\,$\pm$\,0.157 \\
+ & GRU ($H=16$) & 0.003 & 0.344\,$\pm$\,0.102 & 0.291\,$\pm$\,0.121 & 0.285\,$\pm$\,0.122 \\
+ & GRU ($H=32$) & 0.01 & 0.737\,$\pm$\,0.205 & 0.379\,$\pm$\,0.099 & 0.296\,$\pm$\,0.101 \\
+ & GRU ($H=64$) & 0.01 & 0.815\,$\pm$\,0.156 & 0.512\,$\pm$\,0.219 & 0.450\,$\pm$\,0.253 \\
 \midrule
-\multirow{2}{*}{State-tracking layer} & DeltaNet adapter & 0.003 & .499\,$\pm$\,.141 & .277\,$\pm$\,.079 & .221\,$\pm$\,.066 \\
- & DeltaProduct adapter & 0.003 & .645\,$\pm$\,.270 & .470\,$\pm$\,.216 & .341\,$\pm$\,.130 \\
+State-tracking layer & DeltaProduct adapter ($H=16$) & 0.003 & 0.784\,$\pm$\,0.228 & 0.253\,$\pm$\,0.163 & 0.174\,$\pm$\,0.208 \\
 \midrule
-\multirow{3}{*}{Gated recurrence} & GRU32 & 0.001 & .250\,$\pm$\,.006 & .249\,$\pm$\,.004 & .248\,$\pm$\,.004 \\
- & LSTM16 & 0.003 & .499\,$\pm$\,.004 & .502\,$\pm$\,.012 & .454\,$\pm$\,.112 \\
- & LSTM32 & 0.001 & .251\,$\pm$\,.002 & .249\,$\pm$\,.004 & .251\,$\pm$\,.005 \\
+Categorical & Learned cyclic counter ($H=16$) & 0.003 & 0.553\,$\pm$\,0.109 & 0.549\,$\pm$\,0.113 & 0.552\,$\pm$\,0.119 \\
 \bottomrule
 \end{tabular}
 \end{table}

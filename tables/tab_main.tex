@@ -4,12 +4,12 @@
 Final success is the mean at the end of training over five seeds.
 Crossing means reaching $0.90$ greedy success on parity or $0.70$ on $\Z_3$.
 The median step count includes runs censored at their training budget
-($7.68$M steps for GRU, LSTM, and Born, and $20.48$M for the Transformer).
+($7.68$M steps for GRU, LSTM, and the phase-rotation model, and $20.48$M for the Transformer).
 The seed count uses the common budget of $7.68$M steps.}
 \label{tab:main}
 \begin{tabular}{llrrrr}
 \toprule
-Task & Measure & GRU & LSTM & Transformer & Born \\
+Task & Measure & GRU & LSTM & Transformer & Phase rotation \\
 \midrule
 Cue & Final success & 1.00 & 1.00 & 1.00 & 1.00 \\
 Monotone & Final success & 1.00 & 1.00 & 1.00 & 1.00 \\
