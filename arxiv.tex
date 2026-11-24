@@ -1,0 +1,95 @@
+\documentclass{article}
+\usepackage[letterpaper,margin=1in]{geometry}
+\usepackage{times}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{amsthm}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{graphicx,placeins,float}
+\usepackage{microtype}
+\usepackage{nicefrac}
+\usepackage{pifont}
+\usepackage[table]{xcolor}
+% --- palette and table toolkit (shared with tmlr) ---
+\definecolor{failorange}{HTML}{C16E71}
+\definecolor{wsblue}{HTML}{6E8FB2}
+\definecolor{gain}{HTML}{4E8A6B}     % readable sage green (fig sage #7DA494)
+\definecolor{loss}{HTML}{B5545A}     % readable muted terracotta (fig rose #C16E71)
+\definecolor{deltaz}{gray}{0.55}     % neutral for negligible change
+\newcommand{\dgain}[1]{\,\textcolor{gain}{\scriptsize #1}}   % small green delta after a number
+\newcommand{\dloss}[1]{\,\textcolor{loss}{\scriptsize #1}}   % small terracotta delta
+\newcommand{\dzero}[1]{\,\textcolor{deltaz}{\scriptsize #1}} % small neutral delta
+\definecolor{wsRow}{HTML}{EEF3F8}
+\definecolor{refRow}{gray}{0.955}    % very light gray for chance / reference / diagnostic rows
+\newcommand{\wsrow}{\rowcolor{wsRow}}
+\newcommand{\refrow}{\rowcolor{refRow}}
+\newcommand{\myparagraph}[1]{\vspace{2pt}\noindent\textbf{#1}\ }
+\usepackage[round]{natbib}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage{url}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+\usepackage{titlesec}
+\titlespacing*{\section}{0pt}{10pt}{5pt}
+\titlespacing*{\subsection}{0pt}{8pt}{4pt}
+
+\theoremstyle{plain}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\U}{\mathrm{U}}
+\newcommand{\xmark}{\textcolor{loss}{\ding{55}}}
+\newcommand{\cmark}{\textcolor{gain}{\checkmark}}
+
+\title{Structure Follows Uncertainty:\\Cyclic State Estimation and Control under Partial Observation}
+\author{Anonymous}
+\date{}
+
+\hypersetup{
+  pdftitle={Structure Follows Uncertainty: Cyclic State Estimation and Control under Partial Observation},
+  pdfkeywords={partial observability, POMDP, state estimation, Bayes filter, cyclic groups, length generalization, feedback control},
+}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\input{sections/abstract}
+\end{abstract}
+
+\input{sections/intro}
+\FloatBarrier
+\input{sections/method}
+\input{sections/experiments}
+\input{sections/imu}
+\FloatBarrier
+\input{sections/conclusion}
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\clearpage
+\appendix
+\renewcommand{\thefigure}{S\arabic{figure}}
+\renewcommand{\thetable}{S\arabic{table}}
+\setcounter{figure}{0}
+\setcounter{table}{0}
+\renewcommand{\theHfigure}{appendix.\arabic{figure}}
+\renewcommand{\theHtable}{appendix.\arabic{table}}
+\input{sections/appendix}
+\input{sections/scope}
+\input{sections/lengthgen_arch}
+\input{sections/additional_experiments}
+\input{sections/feedback_details}
+\input{sections/imu_details}
+
+\end{document}

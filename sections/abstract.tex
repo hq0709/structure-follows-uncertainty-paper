@@ -1,0 +1,19 @@
+Many systems track a position on a known cycle, such as a valve setting or the
+heading of a sensor, from increments and occasional pointer readings. We ask
+whether cyclic structure helps a learned estimator more in its transition or in
+its belief update. In modular counting with clean inputs, letting the input set
+the angle of a phase rotation raises parity accuracy from $0.66$ to $0.996$ in a
+unit-modulus comparison. With noisy inputs, a model that updates a discrete
+count using event probabilities reaches $0.994$ accuracy at 160 steps. In a
+simulated valve with missing turns, cyclic filters achieve the lowest negative
+log likelihood among learned estimators. With the same planner, every learned
+model comes within $1.5$ percentage points of a Bayes reference across 75
+settings, and the clearest difference is whether the planner takes another
+reading. We then test the same structures on recorded data from a commercial
+inertial measurement unit. Models trained on 10~s windows estimate heading over
+240~s. A rotation set by the gyroscope heading increment gives $29.6^\circ$
+error, compared with $73.7^\circ$ for the best recurrent or attention model,
+and has lower negative log likelihood at every tested length. It matches direct
+integration of the increment, and a classical filter with gyroscope bias
+estimation remains more accurate. With magnetometer readings under magnetic
+disturbance, our cyclic filter only matches the neural networks.

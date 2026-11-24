@@ -1,0 +1,25 @@
+\begin{table}[tbp]
+\centering\small
+\caption{Learning from terminal reward on clean sequences of length 10.
+Final success is the mean at the end of training over five seeds.
+Crossing means reaching $0.90$ greedy success on parity or $0.70$ on $\Z_3$.
+The median step count includes runs censored at their training budget
+($7.68$M steps for GRU, LSTM, and Born, and $20.48$M for the Transformer).
+The seed count uses the common budget of $7.68$M steps.}
+\label{tab:main}
+\begin{tabular}{llrrrr}
+\toprule
+Task & Measure & GRU & LSTM & Transformer & Born \\
+\midrule
+Cue & Final success & 1.00 & 1.00 & 1.00 & 1.00 \\
+Monotone & Final success & 1.00 & 1.00 & 1.00 & 1.00 \\
+\midrule
+$\Z_2$ & Final success & .50 & .50 & .883 & .901 \\
+      & Median crossing steps & $>$7.68M & $>$7.68M & 15.7M & 2.6M \\
+      & Seeds crossing by $7.68$M & 0/5 & 0/5 & 1/5 & 4/5 \\
+$\Z_3$ & Final success & .40 & .33 & .975 & .997 \\
+      & Median crossing steps & $>$7.68M & $>$7.68M & 2.4M & 0.26M \\
+      & Seeds crossing by $7.68$M & 0/5 & 0/5 & 5/5 & 5/5 \\
+\bottomrule
+\end{tabular}
+\end{table}

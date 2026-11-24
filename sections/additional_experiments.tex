@@ -1,0 +1,234 @@
+\section{Additional controlled experiments}
+\label{app:additional}
+\myparagraph{Fixed-length training.} The sequence policies use advantage actor-critic, a terminal reward of $\pm1$,
+full-episode backpropagation, Adam, and gradient clipping at norm~1. Unless
+specified, models use width 16, batch size 256, and a learning rate of $0.003$.
+The fixed-length Born model uses neither state normalization nor angle
+regularization, and it does not mix its hidden coordinates. The length
+curriculum uses normalization and the group-angle penalty from
+Section~\ref{sec:stab}. The independently tuned comparisons follow.
+
+All new studies retain every reported seed, including failures. These are fresh
+experiments rather than reconstructions of missing historical records. The main
+sequence comparison gives each of eight families two learning rates
+($0.001,0.003$) and two tuning seeds (100,101), each with 4,000 updates.
+Selection averages the last three $L=14$ validation evaluations. Five independent
+seeds (0--4) then run 6,000 A2C updates with batch 256, terminal reward,
+and training lengths $4,6,8,10,12,14$. No long-horizon test is used for selection.
+Cells report mean (sample SD) across seeds; each test uses 1,024 episodes per seed.
+Gaussian observations have 16 dimensions and noise SD $0.25$. The group order
+remains known. Hard angles use a straight-through quantizer while retaining
+the original injection and readout, so this control is not an exact counter.
+
+The modern adapters use the official DeltaProduct layer at commit
+\texttt{d62241a}, with one 16-dimensional head, value expansion two, output gate,
+negative eigenvalues, no convolution or forgetting, and a residual feedforward
+block. DeltaNet uses one Householder update and DeltaProduct two. The CPU
+recurrent kernel is verified against independent dense outputs and gradients;
+streaming and full-sequence evaluation agree. These small RL adapters do not
+reproduce full published configurations. Their results therefore cannot support
+a universal comparison with all DeltaNet/DeltaProduct models.
+
+\begin{table}[tbp]
+\centering\small
+\caption{Sequence controls, Gaussian observations, $k=2$.}
+\label{tab:newseq2}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lccccc}
+\toprule
+Model & LR & $L=14$ & $L=40$ & $L=80$ & $L=160$ \\
+\midrule
+Learned cyclic counter & 0.001 & 0.999 (0.001) & 0.999 (0.001) & 0.996 (0.001) & 0.994 (0.002) \\
+DeltaNet adapter & 0.003 & 0.999 (0.002) & 0.997 (0.002) & 0.990 (0.006) & 0.938 (0.060) \\
+DeltaProduct adapter & 0.001 & 0.999 (0.001) & 0.997 (0.001) & 0.985 (0.010) & 0.897 (0.097) \\
+LSTM & 0.003 & 0.897 (0.226) & 0.899 (0.220) & 0.899 (0.213) & 0.893 (0.217) \\
+LSTM32 & 0.003 & 0.947 (0.113) & 0.948 (0.108) & 0.940 (0.117) & 0.933 (0.118) \\
+Born + soft reg. & 0.003 & 0.701 (0.048) & 0.505 (0.040) & 0.496 (0.007) & 0.503 (0.009) \\
+Born hard angles & 0.001 & 0.492 (0.021) & 0.500 (0.020) & 0.491 (0.015) & 0.499 (0.015) \\
+Born unregularized & 0.003 & 0.730 (0.020) & 0.520 (0.036) & 0.500 (0.026) & 0.502 (0.014) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[tbp]
+\centering\small
+\caption{Sequence controls, Gaussian observations, $k=3$.}
+\label{tab:newseq3}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lccccc}
+\toprule
+Model & LR & $L=14$ & $L=40$ & $L=80$ & $L=160$ \\
+\midrule
+Learned cyclic counter & 0.001 & 0.999 (0.001) & 0.999 (0.001) & 0.996 (0.001) & 0.994 (0.002) \\
+DeltaNet adapter & 0.003 & 0.458 (0.069) & 0.345 (0.014) & 0.336 (0.018) & 0.326 (0.014) \\
+DeltaProduct adapter & 0.003 & 0.795 (0.284) & 0.513 (0.280) & 0.332 (0.400) & 0.378 (0.285) \\
+LSTM & 0.003 & 0.683 (0.332) & 0.663 (0.311) & 0.615 (0.310) & 0.576 (0.313) \\
+LSTM32 & 0.003 & 0.967 (0.071) & 0.964 (0.067) & 0.955 (0.076) & 0.944 (0.075) \\
+Born + soft reg. & 0.003 & 0.719 (0.019) & 0.321 (0.098) & 0.335 (0.023) & 0.335 (0.010) \\
+Born hard angles & 0.003 & 0.841 (0.283) & 0.827 (0.266) & 0.780 (0.251) & 0.699 (0.214) \\
+Born unregularized & 0.003 & 0.715 (0.035) & 0.345 (0.098) & 0.333 (0.036) & 0.325 (0.014) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[tbp]
+\centering\small
+\caption{Sequence controls, Gaussian observations, $k=4$.}
+\label{tab:newseq4}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lccccc}
+\toprule
+Model & LR & $L=14$ & $L=40$ & $L=80$ & $L=160$ \\
+\midrule
+Learned cyclic counter & 0.001 & 0.999 (0.001) & 0.998 (0.001) & 0.996 (0.002) & 0.994 (0.002) \\
+DeltaNet adapter & 0.001 & 0.310 (0.083) & 0.247 (0.006) & 0.248 (0.021) & 0.258 (0.018) \\
+DeltaProduct adapter & 0.001 & 0.486 (0.306) & 0.450 (0.328) & 0.429 (0.278) & 0.322 (0.094) \\
+LSTM & 0.001 & 0.702 (0.406) & 0.694 (0.411) & 0.696 (0.402) & 0.678 (0.414) \\
+LSTM32 & 0.003 & 0.765 (0.345) & 0.771 (0.333) & 0.773 (0.323) & 0.756 (0.338) \\
+Born + soft reg. & 0.003 & 0.689 (0.092) & 0.351 (0.179) & 0.303 (0.072) & 0.248 (0.008) \\
+Born hard angles & 0.003 & 0.884 (0.079) & 0.859 (0.065) & 0.788 (0.084) & 0.562 (0.081) \\
+Born unregularized & 0.003 & 0.724 (0.016) & 0.416 (0.067) & 0.271 (0.067) & 0.239 (0.006) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[tbp]
+\centering\small
+\caption{Sequence controls, clean observations, $k=5$.}
+\label{tab:newseq5}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lccccc}
+\toprule
+Model & LR & $L=14$ & $L=40$ & $L=80$ & $L=160$ \\
+\midrule
+Learned cyclic counter & 0.001 & 1.000 (0.000) & 1.000 (0.000) & 1.000 (0.000) & 1.000 (0.000) \\
+DeltaNet adapter & 0.003 & 0.388 (0.090) & 0.194 (0.010) & 0.195 (0.013) & 0.203 (0.015) \\
+DeltaProduct adapter & 0.001 & 0.808 (0.228) & 0.646 (0.406) & 0.635 (0.411) & 0.571 (0.347) \\
+LSTM & 0.003 & 0.476 (0.336) & 0.367 (0.354) & 0.359 (0.359) & 0.352 (0.362) \\
+LSTM32 & 0.001 & 0.999 (0.001) & 0.999 (0.001) & 0.998 (0.005) & 0.994 (0.011) \\
+Born + soft reg. & 0.003 & 0.791 (0.140) & 0.647 (0.346) & 0.595 (0.309) & 0.252 (0.079) \\
+Born hard angles & 0.003 & 0.946 (0.085) & 0.948 (0.077) & 0.720 (0.250) & 0.400 (0.258) \\
+Born unregularized & 0.003 & 0.712 (0.097) & 0.457 (0.233) & 0.498 (0.222) & 0.162 (0.082) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\myparagraph{Valve protocol and optimization sensitivity.}
+The complete policy learns from terminal reward on the operate task described
+above. The validation-only selection protocol is identical across families,
+using the last three $K=8$ evaluations. It was added after observing fixed-recipe
+results, and is not preregistered. Selection with a 4,000-update budget can favor
+a learning rate that is weaker after 6,000 updates; we therefore also retain
+the full fixed-$0.003$ study rather than reporting only selected baselines.
+Each selected-policy test uses 4,096 episodes per seed and condition. The
+programmed oracle succeeds on every evaluated horizon; the learned classical
+counter is a separate model that learns observation-conditioned cyclic belief
+updates and an action head. Twenty animated episodes per horizon ($K=8,32$)
+for each of 25 fixed-recipe policies give 1,000 simulator episodes. These use
+scripted valve poses and do not establish contact-driven manipulation.
+
+\begin{table}[tbp]
+\centering\small
+\caption{Fixed-rate ($0.003$) valve controls, retained to expose tuning sensitivity.}
+\label{tab:valvefixed}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lccc}
+\toprule
+Policy & $K=8$ & $K=32$ & $K=128$ \\
+\midrule
+Born16 & 1.000 (0.000) & 0.998 (0.003) & 0.749 (0.351) \\
+Born + soft reg.16 & 0.899 (0.222) & 0.454 (0.179) & 0.119 (0.089) \\
+GRU32 & 0.395 (0.148) & 0.401 (0.134) & 0.376 (0.121) \\
+LSTM16 & 0.499 (0.004) & 0.502 (0.012) & 0.454 (0.112) \\
+LSTM32 & 0.561 (0.174) & 0.546 (0.146) & 0.510 (0.072) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\myparagraph{Image observations.}
+A shared CNN and the memory are trained jointly from raw MNIST images. Odd
+digits constitute latent events; only terminal reward supervises their count
+modulo $k$. There is no digit-classification loss or pretrained perception.
+Training uses the first 50,000 training images; validation uses the remaining
+10,000; evaluation uses the separate official test set. Training lengths
+$1,2,4,6,8$ include short credit-assignment paths. A2C uses batch 128, learning
+rate $0.001$, and 6,000 updates; evaluation uses 2,048 episodes per seed.
+The unregularized variant was added after initial failures; both variants
+are retained. These tests do not establish broad visual robustness.
+
+\begin{table}[tbp]
+\centering\small
+\caption{Raw-image event counting, five seeds per model and group order.}
+\label{tab:newvision}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcccc}
+\toprule
+Model / $k$ & $L=1$ & $L=8$ & $L=40$ & $L=80$ \\
+\midrule
+Learned cyclic counter / 2 & 0.989 (0.005) & 0.905 (0.022) & 0.679 (0.037) & 0.562 (0.031) \\
+Learned cyclic counter / 3 & 0.989 (0.001) & 0.911 (0.009) & 0.666 (0.017) & 0.495 (0.030) \\
+DeltaProduct adapter / 2 & 0.987 (0.003) & 0.895 (0.019) & 0.652 (0.030) & 0.541 (0.023) \\
+DeltaProduct adapter / 3 & 0.988 (0.005) & 0.909 (0.024) & 0.528 (0.042) & 0.316 (0.040) \\
+LSTM32 / 2 & 0.991 (0.001) & 0.929 (0.009) & 0.741 (0.029) & 0.613 (0.034) \\
+LSTM32 / 3 & 0.989 (0.002) & 0.909 (0.010) & 0.647 (0.017) & 0.490 (0.013) \\
+Born + soft reg. / 2 & 0.982 (0.005) & 0.673 (0.024) & 0.500 (0.013) & 0.500 (0.019) \\
+Born + soft reg. / 3 & 0.983 (0.003) & 0.689 (0.019) & 0.329 (0.007) & 0.334 (0.010) \\
+Born unregularized / 2 & 0.983 (0.007) & 0.668 (0.034) & 0.509 (0.012) & 0.494 (0.014) \\
+Born unregularized / 3 & 0.983 (0.003) & 0.666 (0.032) & 0.334 (0.010) & 0.338 (0.010) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\myparagraph{Frozen-state supervised probes.}
+We freeze identical recurrence checkpoints and fit readout heads on the same
+6,144 labelled examples, using identical minibatch index streams for 6,000 Adam
+updates at learning rate $0.003$. This is supervised fitting, not RL learning.
+The absolute-linear head sees all real and imaginary channels. The invariant
+quadratic head sees every pairwise relative-phase product and has more parameters.
+Both Born and invariant-quadratic heads fit the clean parity training set
+perfectly, yet differ in extrapolation. The apparent Born advantage at $L=80$
+weakens at $L=160$ and does not consistently extend to $k=3$ or noisy inputs.
+All 60 fitted heads were replayed, reproducing every test accuracy exactly.
+These results support a protocol-specific parameterization benefit, not necessity.
+
+\begin{table}[tbp]
+\centering\small
+\caption{Clean frozen-state probes; 2,048 test examples per seed.}
+\label{tab:newfrozenclean}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcccc}
+\toprule
+$k$ / head & $L=14$ & $L=40$ & $L=80$ & $L=160$ \\
+\midrule
+2 / Original head & 1.000 (0.000) & 1.000 (0.000) & 0.904 (0.215) & 0.484 (0.469) \\
+2 / Born & 1.000 (0.000) & 1.000 (0.000) & 0.999 (0.003) & 0.586 (0.442) \\
+2 / Absolute linear & 0.504 (0.132) & 0.480 (0.041) & 0.486 (0.058) & 0.508 (0.031) \\
+2 / Invariant quadratic & 1.000 (0.000) & 1.000 (0.000) & 0.757 (0.408) & 0.496 (0.396) \\
+3 / Original head & 0.906 (0.092) & 0.715 (0.275) & 0.630 (0.358) & 0.573 (0.352) \\
+3 / Born & 0.968 (0.045) & 0.652 (0.349) & 0.596 (0.374) & 0.599 (0.365) \\
+3 / Absolute linear & 1.000 (0.001) & 0.738 (0.331) & 0.588 (0.400) & 0.556 (0.412) \\
+3 / Invariant quadratic & 1.000 (0.000) & 0.802 (0.257) & 0.621 (0.401) & 0.563 (0.405) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[tbp]
+\centering\small
+\caption{Noisy frozen-state probes; 2,048 test examples per seed.}
+\label{tab:newfrozen}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcccc}
+\toprule
+$k$ / head & $L=14$ & $L=40$ & $L=80$ & $L=160$ \\
+\midrule
+3 / Original head & 0.713 (0.015) & 0.324 (0.095) & 0.331 (0.011) & 0.330 (0.008) \\
+3 / Born & 0.711 (0.009) & 0.340 (0.068) & 0.332 (0.011) & 0.328 (0.010) \\
+3 / Absolute linear & 0.456 (0.190) & 0.363 (0.056) & 0.337 (0.011) & 0.331 (0.009) \\
+3 / Invariant quadratic & 0.700 (0.018) & 0.359 (0.047) & 0.329 (0.017) & 0.336 (0.009) \\
+4 / Original head & 0.660 (0.067) & 0.402 (0.070) & 0.286 (0.059) & 0.253 (0.010) \\
+4 / Born & 0.703 (0.021) & 0.424 (0.057) & 0.285 (0.061) & 0.256 (0.013) \\
+4 / Absolute linear & 0.713 (0.009) & 0.375 (0.113) & 0.253 (0.091) & 0.257 (0.013) \\
+4 / Invariant quadratic & 0.710 (0.008) & 0.398 (0.082) & 0.265 (0.080) & 0.260 (0.006) \\
+\bottomrule
+\end{tabular}
+\end{table}

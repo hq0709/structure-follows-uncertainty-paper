@@ -1,0 +1,278 @@
+\section{Estimation and Feedback Experiment Details}
+\label{app:feedbackdetails}
+\myparagraph{Token constraint and remaining uncertainty.} Adding the token constraint changes NLL by $-0.00095$ nats (descriptive 95\%
+seed-bootstrap interval $[-0.00189,-0.00016]$) and net utility by $+0.098$ points
+($[-0.048,0.246]$). The constrained filter remains $0.0168$ nats above
+matched Bayes. On the clean length-80 histories, the constraint fixes every
+update and its NLL is zero, compared with $0.068$ without the constraint.
+Even
+after observing the history, the matched posterior retains an average
+entropy of $0.826$ nats for four-step bursts, compared with $0.558$ nats for
+one-step bursts.
+
+Training uses 600 Adam updates, batch size 96, gradient norm clipping at 1,
+history lengths 6, 10, and 14, and dense negative log likelihood of the
+latent state at each prefix. Clean episodes account for a quarter of updates.
+Other episodes sample burst sizes 1 and 3 and pointer periods 6 and 9.
+The validation grid consists of the clean case and all four training-regime
+burst-period pairs at length 14. Using seeds 310 and 311 and disjoint
+validation streams, we select the learning rate by mean final validation NLL
+over the grid. Both $0.001$ and $0.003$ are tried; the four learned estimators
+select $0.003$. The confirmation runs use seeds 410--414 with independently
+generated held-out histories. For each seed and cell there are 512 paired
+episodes. We evaluate history lengths 40 and 80. The held-out nominal grid
+uses periods 8 and 12 and burst sizes 1 and 4, alongside clean histories and
+the two separate shifts at period 12 and burst size 4. The settings were
+designed after an earlier pilot and fixed before this experiment's test results.
+
+The input is an eight-channel vector of four event tokens and four pointer
+states, with zero pointer channels if a reading is absent. Only the exact
+initial pointer is supplied at step zero. No future information, final flag,
+latent update counts, clock or target enters the estimator. Parameters and
+optimization histories are saved for every model and seed. At test time,
+all models use the same histories, targets and exogenous draws for actuation
+and sensor noise.
+
+Circular estimation actions minimize the posterior expectation of the distance
+$d(a,s)=\min(|a-s|,4-|a-s|)$. Circular regret is this decision's conditional
+risk minus the minimum risk, both evaluated under the matched posterior.
+We also record Brier score, top-label calibration error with ten bins, KL to
+the matched posterior, and NLL by observation age and latent update count.
+For NLL and KL, predicted probabilities are floored at $10^{-8}$.
+The seed-bootstrap intervals in the main text are descriptive percentile
+intervals over 10,000 resampled sets of five paired seeds.
+
+The controller computes its action values by enumerating all later actions
+and every possible sensor reading. For a commanded turn, the planned belief
+update is $0.8 P_d b + 0.2b$. Sensing updates the belief by the pointer
+likelihood and averages continuation value over possible outcomes. Greedy
+selection uses these finite-horizon values at every actual decision.
+We independently verify short-horizon posteriors by summing over latent
+trajectories. We also verify probability normalization, finite gradients,
+causality at a shared prefix and basic planner decisions.
+
+\begin{figure}[!htb]
+\centering
+\setlength{\abovecaptionskip}{4pt}
+\includegraphics[width=\linewidth]{figures/feedback_results.pdf}
+\caption{Tracking and control with missing events.
+(a)~Nominal NLL at $L=80$. Shading marks missing events. Age zero includes the exact
+initial pointer and later readings.
+(b)~Net utility averaged over $L=40,80$. Bars show one sample SD across five seeds.}
+\label{fig:feedback}
+\end{figure}
+
+\section{Planner Regime Sweep}
+\label{app:regimes}
+The sweep reuses the twenty frozen test checkpoints and the evaluation histories of the
+main experiment; nothing is retrained. Only the controller changes: its horizon $H$, the
+sensing cost $c$, and the probability $\rho$ that a control-time reading returns the true
+pointer (otherwise a uniform token), which the planner also uses in its belief update.
+Turn cost $0.04$ and turn success $0.8$ stay fixed. Action and sensor outcomes are drawn
+once per cell and seed and shared by all estimators. With the original draws, $H=3$,
+$c=0.08$ and $\rho=0.8$, the sweep code reproduces every per-seed utility of
+Table~\ref{tab:feedback} exactly. A one-step planner never senses, and a cost of $0.4$
+suppresses sensing at $\rho=0.6$, so the 75 grid points contain 53 distinct regimes.
+Table~\ref{tab:regimes} summarizes each estimator over the grid.
+
+\begin{table}[h]
+\centering\small
+\caption{Utility loss to matched Bayes over the 75-regime grid, in percentage points.
+Retained share is computed for the 40 regimes with at least ten points of headroom.
+Significant losses count regimes whose seed-bootstrap interval lies below zero.}
+\label{tab:regimes}
+\begin{tabular}{lrrrrr}
+\toprule
+Estimator & Max loss & Mean loss & Min retained & Below uniform & Significant losses \\
+\midrule
+GRU & 1.47 & 0.65 & 90.1\% & 3 & 57 \\
+Born rotor & 1.32 & 0.63 & 89.8\% & 0 & 65 \\
+Unconstrained filter & 0.66 & 0.23 & 96.6\% & 0 & 27 \\
+Token-constrained filter & 0.66 & 0.21 & 95.6\% & 0 & 22 \\
+Nominal Bayes & 0.73 & 0.34 & 95.4\% & 0 & 56 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Active Measurement in Recorded Spectrometer Scans}
+\label{app:speckle-replay}
+\label{sec:speckle-replay}
+A multimode fiber spectrometer identifies a wavelength by changing the pattern
+on a spatial light modulator and measuring intensity near a focal spot
+\citep{kurekci2023spectrometer}. We replay the choice of pattern on held-out
+scans from this instrument \citep{kurekci2022speckle}. One measurement reveals
+the recorded intensity for the chosen pattern. The wavelength stays fixed
+through a scan, and each measurement updates a probability distribution over
+the possible wavelengths.
+
+Figure~\ref{fig:speckle-feedback} shows the measurement path and accuracy.
+All policies use the same classical observation model and Bayesian update.
+The adaptive policy chooses the next pattern for its expected information gain.
+With 26 calibration wavelengths and eight measurements, it identifies
+$45.8\%$ of the held-out wavelengths correctly. The optimized and evenly spaced
+fixed orders identify $20.8\%$ and $16.7\%$, respectively. The paired accuracy
+intervals exclude zero. The intervals for absolute wavelength error include
+zero. This replay isolates the effect of selecting measurements from the belief;
+it does not test the phase architecture.
+The rest of this section gives the replay protocol and sensitivity to
+calibration size and added noise.
+
+\begin{figure}[!htb]
+\centering
+\setlength{\abovecaptionskip}{4pt}
+\includegraphics[width=\linewidth]{figures/speckle_feedback.pdf}
+\caption{Active wavelength measurement. (a)~A mask shapes light entering the
+fiber. Each reading integrates the focal region shown in a contrast-adjusted
+crop from the measured archive \citep{kurekci2022speckle}.
+(b)~Accuracy on 24 held-out wavelengths after calibration on the other 26.
+The dotted line marks eight reads.}
+\label{fig:speckle-feedback}
+\end{figure}
+
+The public archive contains a calibration image and a test image for each of
+50 mask and 50 wavelength combinations \citep{kurekci2022speckle}. The wavelengths
+span an ordered grid with 10~pm spacing. In replay, the wavelength is fixed and
+unknown. Each action reveals one previously unused mask's recorded intensity.
+We integrate the 76 pixels nearest a focal center estimated from the retained
+calibration images. The 26- and 14-row protocols retain every second or fourth
+wavelength and the upper endpoint. We test only the omitted wavelengths and
+keep all 50 source masks, including those previously optimized at omitted
+wavelengths.
+
+We fit the expected log intensity with kernel ridge regression on the residual
+from a pooled profile of mask-to-wavelength offsets. We estimate a per-mask
+noise scale by leaving out calibration wavelengths. Every policy starts with a
+uniform wavelength prior and uses the same discretized Gaussian likelihood and
+Bayesian update. The adaptive policy chooses the unused mask with greatest
+expected information gain. One fixed policy chooses a calibration-only order
+using pairwise Bhattacharyya affinity of the mask likelihoods. The other starts
+with the two extreme mask wavelengths and repeatedly selects the mask farthest
+from those already chosen. The point prediction is the most probable wavelength.
+
+Table~\ref{tab:speckle-replay} shows the results at eight reads. The added-noise
+condition applies an episode-wide log-gain offset with standard deviation
+$0.22$ and independent log-intensity noise with standard deviation $0.022$.
+The filter marginalizes the gain over a shared seven-point grid. In this
+condition the information gain is computed over the joint wavelength and gain
+belief. We average five paired perturbation replicates per seed across five
+seeds. We resample whole wavelengths and, when applicable, perturbation seeds
+for descriptive paired intervals.
+
+\begin{table}[!htb]
+\centering\small
+\caption{Wavelength accuracy after eight mask reads in recorded scans. The
+stress rows add simulated gain and read noise.}
+\label{tab:speckle-replay}
+\begin{tabular}{rrlrrr}
+\toprule
+Calibration & Test & Readout & Adaptive & Optimized fixed & Evenly spaced \\
+wavelengths & wavelengths & & (\%) & (\%) & (\%) \\
+\midrule
+26 & 24 & Recorded & 45.8 & 20.8 & 16.7 \\
+26 & 24 & Stress & 42.3 & 17.0 & 13.7 \\
+14 & 36 & Recorded & 44.4 & 19.4 & 13.9 \\
+14 & 36 & Stress & 33.3 & 20.6 & 13.1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+With 26 calibration wavelengths and unmodified recordings, the adaptive
+accuracy gains over the optimized and evenly spaced orders are $25.0$ and
+$29.2$ percentage points. The descriptive 95\% paired intervals are
+$[4.2,45.8]$ and $[8.3,50.0]$. The corresponding mean absolute errors
+are $53.75$, $74.58$, and $83.33$~pm. Both intervals for the adaptive
+minus fixed error include zero. During the exploration, learned
+squared-amplitude observation models did not consistently outperform the
+classical likelihood. The comparison in Table~\ref{tab:speckle-replay}
+isolates the mask-selection policy. The archive allows replay at a fixed
+wavelength; it provides no timing measurements for the adaptive policy
+and no trajectories with wavelength drift.
+
+\section{Interference Readouts in a Four-Channel Simulation}
+\label{sec:phase-channels}
+A $90^\circ$ optical hybrid combines a tunable laser and a reference at
+four relative phases and sends the four outputs to separate detectors
+\citep{lu2012optical}. In an equal-gain photon-counting readout, each
+port's probability is proportional to its interference intensity. The
+published lock uses analog I/Q signals. Our simulation uses discrete port
+reports.
+
+Let $\theta$ be the signal phase and $m$ the number of readout channels. For equally
+spaced offsets $\phi_y=2\pi y/m$ with $y=0,\ldots,m-1$ and $m\geq 2$, the cosine
+terms sum to zero, so the normalized squared amplitudes give
+\begin{equation}
+p(y\mid\theta)
+  = \frac{|a+b e^{i(\theta-\phi_y)}|^2}{\sum_j |a+b e^{i(\theta-\phi_j)}|^2}
+  = \frac{1+\nu\cos(\theta-\phi_y)}{m},
+\qquad \nu=\frac{2ab}{a^2+b^2},
+\label{eq:phase-channel-likelihood}
+\end{equation}
+where $a,b>0$ are the field amplitudes and $\nu$ is the fringe visibility.
+Classical interference in real arithmetic gives the same likelihood.
+The number of channels $m$ is independent of the number of candidate
+phases $k$. For example, five channels use $72^\circ$ spacing. The
+comparison with a first-harmonic softmax extends to $m\geq4$
+(Section~\ref{app:phase-channels}).
+
+\myparagraph{Four-channel simulation.}
+We used the four-state valve simulator with four missing event tokens before
+each scheduled readout and a $15\%$ error rate on visible turn tokens. At each
+reading, the filter receives a reference phase and a simulated port index.
+We compared two observation models: the interference likelihood in
+Equation~\eqref{eq:phase-channel-likelihood} at visibility $0.9$ and a log-linear
+likelihood proportional to $\exp[1.45\cos(\theta-\phi_y)]$. We fit a
+squared-amplitude head and a first-harmonic softmax with two trainable
+parameters each, plus a wider softmax using the same phase features. Matched
+Bayes uses the true likelihood for each simulation. All four estimators share
+the turn model and three-action planner. We evaluated five paired seeds on
+1,024 held-out trajectories per seed at each of lengths 40 and 80
+(Section~\ref{app:phase-pilot}).
+
+Table~\ref{tab:phase-sensor-fit} shows that the sensor-fit ranking reverses
+between the two worlds. In the interference setting, relative to the harmonic
+softmax, the squared-amplitude head lowers terminal state NLL by $0.00232$
+and $0.00097$ nats at lengths 40 and 80. Expected net utility rises by about
+$0.03$ points at each length. The paired intervals for realized net utility
+include zero, and the flexible softmax has similar expected net utility.
+
+\begin{table}[!htb]
+\centering\small
+\caption{Held-out sensor KL in nats, averaged over five seeds.}
+\label{tab:phase-sensor-fit}
+\begin{tabular}{lrr}
+\toprule
+Readout & Interference & Log-linear \\
+\midrule
+Squared amplitude & 0.00266 & 0.05198 \\
+First-harmonic softmax & 0.01892 & 0.00006 \\
+Flexible softmax & 0.00796 & 0.00307 \\
+Matched Bayes & 0 & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Likelihood comparison for equally spaced phase channels}
+\label{app:phase-channels}
+At $\theta=0$, symmetry forces $B=0$ in any exact softmax representation
+of Equation~\eqref{eq:phase-channel-likelihood} with logits
+$A\cos\phi_y+B\sin\phi_y$. For $0<\nu<1$, the strictly concave function
+$\log(1+\nu x)$ cannot agree with an affine function at the three or more
+distinct values of $x=\cos\phi_y$ when $m\geq4$. A vanishing KL gap would
+force probabilities to converge to the fully supported target and their
+centered logs to lie in the closed span of the harmonics. This contradicts
+the lack of an exact representation. The optimum matches the moment
+$\mathbb{E}[\cos\phi_y]=\nu/2$. At $\nu=0.9$ the excess population NLL is
+$0.03736$ nats per reading for $m=4$ and $0.01406$ for $m=5$.
+
+\subsection{Four-channel simulation protocol}
+\label{app:phase-pilot}
+Reference phases are uniform. Each head trains for 250 Adam updates at
+learning rate $0.01$ on batches of 256 calibration examples. Compact heads
+learn an offset and a link-strength scalar. The flexible head has width 32
+and 228 parameters. Sensor KL averages 8,192 independent contexts per seed.
+Within each world, models share test histories and random draws. Their
+control-time sensor and turns follow Appendix~\ref{app:feedbackdetails}.
+Expected utility integrates outcomes under the true handoff posterior.
+The paired 95\% seed-bootstrap intervals for squared-amplitude minus
+harmonic-softmax realized utility are $[-0.088,0.191]$ points at length 40
+and $[-0.200,0.046]$ at length 80.

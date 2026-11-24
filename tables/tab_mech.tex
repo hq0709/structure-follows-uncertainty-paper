@@ -1,0 +1,32 @@
+\begin{table}[tbp]
+\centering
+\caption{Parity accuracy for tested recurrent variants ($L{=}10$,
+matched trainer). Upper block: prior architectures and reductions, including a diagonal complex
+state-space model (LRU, five seeds; see Appendix~\ref{app:lru}). Lower block: readout ablations
+on our recurrence.}
+\label{tab:mech}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lcc}
+\toprule
+Model & Parameters & Parity accuracy \\
+\midrule
+\multicolumn{3}{l}{\emph{Prior architectures and reductions}} \\
+GRU (linear readout) & 1.1k & 0.50 \\
+GRU + general quadratic readout & 1.6k & 0.50 \\
+LSTM & 1.5k & 0.50 \\
+uRNN (linear readout) & 0.8k & 0.50 \\
+uRNN + Born readout & 0.8k & 0.70 \\
+LRU (linear readout) & 0.3k & 0.50 \\
+LRU + Born readout & 0.3k & 0.64 \\
+Transformer (causal) & 20k & \textbf{0.99} \\
+\midrule
+\multicolumn{3}{l}{\emph{Our recurrence, different readouts}} \\
+linear (softmax) readout & 0.4k & 0.50 \\
+general quadratic readout & 2.4k & 0.58 \\
+Born readout, phase $\theta\equiv 0$ & 0.3k & 0.56 \\
+Born readout, with mixing $M$ & 0.3k & 0.72 \\
+\wsrow \textbf{Born readout (ours, $M{=}I$)} & \textbf{337} & \textbf{1.00} \\
+\bottomrule
+\end{tabular}
+\end{table}

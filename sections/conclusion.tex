@@ -1,0 +1,34 @@
+\section{Discussion and Conclusion}
+\label{sec:discussion}
+\label{sec:conclusion}
+
+When every turn is observed, an input-dependent rotation can represent an exact
+count, and a policy can learn it from a terminal reward. A learned rotation angle,
+however, accumulates small errors over time, and a categorical counter avoids
+them by fixing each shift and weighting the shifts by event probabilities. When
+turns are missing, a cyclic filter keeps several possible positions and updates
+their probabilities whenever a pointer reading arrives. In our tests the cyclic
+filters gave the most accurate beliefs among the learned models. Because the same
+planner often chose the same action from different beliefs, these better beliefs
+changed net utility by only about one point. Their clearest effect was on whether
+to take another reading: when readings were cheap and reliable, an overconfident
+estimate could lead the planner to skip a useful one.
+
+These comparisons are controlled in three ways. We supply the cycle size, and in
+the feedback study we train estimators with state labels and give the planner the
+simulator's actuator and sensor models. A programmed counter shows what is
+possible when every event is known, and a Bayes filter on the observed history
+shows how much uncertainty remains when the observation model is known. Giving
+every estimate to the same planner then tests whether better beliefs change
+actions or costs. On real sensors, learning a bias state and a disturbance-aware
+pointer model would be the next step toward the classical filter.
+
+The recorded inertial sensor shows the same pattern outside simulation. A rotation
+set by the measured heading increment kept its accuracy from 10~s training
+windows to 240~s test windows, whereas recurrent and attention models given the
+same inputs did not. Under magnetic disturbance our learned pointer model only
+matched these networks, and an engineered filter with bias estimation and
+disturbance rejection remained more accurate in both tasks. Taken together, the
+results suggest that a known cycle helps most when it fixes the entry point of
+uncertainty: the transition when increments are measured, and the pointer model
+when readings are corrupted.

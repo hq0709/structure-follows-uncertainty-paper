@@ -1,0 +1,27 @@
+\begin{table}[!t]
+\centering\small
+\caption{Valve control after training on 1--8 intervening turns. The table gives
+greedy success at $K$ turns, as mean $\pm$ sample SD over five seeds (4,096
+episodes each). The number after a model name gives its width. Soft reg. uses an
+angle penalty, and LR is the validation-selected learning rate.
+A programmed counter succeeds at every horizon.}
+\label{tab:valve}
+\setlength{\tabcolsep}{7pt}
+\begin{tabular}{llcccc}
+\toprule
+Memory type & Policy & LR & $K=8$ & $K=32$ & $K=128$ \\
+\midrule
+\multirow{2}{*}{Phase rotation} & Born16 & 0.003 & \textbf{1.000}\,$\pm$\,.000 & \textbf{.998}\,$\pm$\,.003 & \textbf{.749}\,$\pm$\,.351 \\
+ & Born16 + soft reg. & 0.003 & .899\,$\pm$\,.222 & .454\,$\pm$\,.179 & .119\,$\pm$\,.089 \\
+\midrule
+Categorical & Learned cyclic counter & 0.003 & .567\,$\pm$\,.151 & .572\,$\pm$\,.158 & .553\,$\pm$\,.169 \\
+\midrule
+\multirow{2}{*}{State-tracking layer} & DeltaNet adapter & 0.003 & .499\,$\pm$\,.141 & .277\,$\pm$\,.079 & .221\,$\pm$\,.066 \\
+ & DeltaProduct adapter & 0.003 & .645\,$\pm$\,.270 & .470\,$\pm$\,.216 & .341\,$\pm$\,.130 \\
+\midrule
+\multirow{3}{*}{Gated recurrence} & GRU32 & 0.001 & .250\,$\pm$\,.006 & .249\,$\pm$\,.004 & .248\,$\pm$\,.004 \\
+ & LSTM16 & 0.003 & .499\,$\pm$\,.004 & .502\,$\pm$\,.012 & .454\,$\pm$\,.112 \\
+ & LSTM32 & 0.001 & .251\,$\pm$\,.002 & .249\,$\pm$\,.004 & .251\,$\pm$\,.005 \\
+\bottomrule
+\end{tabular}
+\end{table}

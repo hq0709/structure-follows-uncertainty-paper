@@ -1,0 +1,20 @@
+\begin{table}[tbp]
+\centering
+\caption{Zero-shot greedy accuracy at three evaluation lengths (five seeds; training curriculum
+$L\in\{4,6,\dots,14\}$). Bold marks the better of Born and LSTM; the LSTM overtakes for $k\ge4$.}
+\label{tab:kscaling}
+\small
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{cc ccc ccc}
+\toprule
+ & & \multicolumn{3}{c}{\textbf{Born} (ours)} & \multicolumn{3}{c}{LSTM} \\
+\cmidrule(lr){3-5} \cmidrule(lr){6-8}
+$k$ & chance & L10 & L40 & L80 & L10 & L40 & L80 \\
+\midrule
+\wsrow $2$ & 0.50 & \textbf{1.00} & \textbf{1.00} & \textbf{0.99} & 0.50 & 0.50 & 0.50 \\
+\wsrow $3$ & 0.33 & \textbf{0.91} & \textbf{0.90} & \textbf{0.70} & 0.47 & 0.43 & 0.43 \\
+$4$ & 0.25 & 0.80 & 0.55 & 0.54 & \textbf{0.88} & \textbf{0.85} & \textbf{0.84} \\
+$5$ & 0.20 & 0.82 & 0.57 & 0.57 & \textbf{0.84} & \textbf{0.84} & \textbf{0.84} \\
+\bottomrule
+\end{tabular}
+\end{table}
