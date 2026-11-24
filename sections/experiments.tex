@@ -10,12 +10,20 @@ features (Section~\ref{sec:noisy}) and to missing turns with occasional pointer
 readings (Section~\ref{sec:feedback}). A shared planner tests the resulting
 beliefs in feedback control (Section~\ref{sec:regimes}).
 
+Each row of Table~\ref{tab:summary} gives one experiment, grouped by the
+source of uncertainty. The shaded cell marks the model that puts structure
+at that source. In every row, the shaded model achieves the best value among
+the learned estimators shown, including ties. The cyclic filter stays close to
+matched Bayes in most rows with that reference.
+
+\input{tables/tab_summary}
+
 \subsection{Clean events: learning to count from a terminal reward}
 \label{sec:rl}
 \label{sec:boundary}
 Table~\ref{tab:main} compares policies trained with advantage actor-critic on
 clean sequences of length 10. Figure~\ref{fig:reward} shows the learning curves
-for parity and $\Z_3$ counting. Appendix~\ref{app:additional} gives the training
+for parity and $\Z_3$ counting. Appendix~\ref{app:clean-training} gives the training
 details. At the common budget of $7.68$ million environment steps, four of
 five seeds of the phase-rotation model reach the parity threshold, against one of five
 Transformer seeds. On $\Z_3$, all five seeds of both models reach the threshold
@@ -62,7 +70,7 @@ errors that accumulate over longer sequences (Section~\ref{sec:stab}). The
 phase-advance and readout ablations link the parity gains to the phase carried
 by the transition (Table~\ref{tab:mech}). On frozen states, the squared-amplitude
 readout gives the strongest clean parity result at length 80
-(Appendix~\ref{app:additional}).
+(Appendix~\ref{app:clean-probes}).
 
 \phantomsection
 \myparagraph{Using the count to operate a valve.}
@@ -178,7 +186,7 @@ to mix exact shifts of a categorical count belief
 (Equation~\eqref{eq:filter-predict}). It reaches $0.994$ accuracy at length 160
 for $k=2,3,4$ (Table~\ref{tab:noisy}). At that length, width-16 and width-32
 LSTMs reach $0.893$ and $0.933$ on parity. Small DeltaNet and DeltaProduct
-adapters reach $0.33$--$0.38$ on $\Z_3$ (Appendix~\ref{app:additional}).
+adapters reach $0.33$--$0.38$ on $\Z_3$ (Appendix~\ref{app:gaussian}).
 
 A learned-angle rotation places structure in a single transition angle. Each
 noisy cue can support several events, so an angular update can accumulate event
@@ -236,8 +244,8 @@ pointer reading and $0.591$ at the reading.
 At the end of each history, the planner receives the estimator's final belief and
 a uniformly drawn target position. It can turn clockwise, turn counterclockwise,
 read the pointer, or finish. A turn succeeds with probability $0.8$ without
-confirmation, and in the default setting new readings use $\rho=0.8$ even when
-the earlier tracking readings were noisier. The planner knows these
+confirmation. In the default setting, new readings use $\rho=0.8$ regardless
+of the reliability of earlier tracking readings. The planner knows these
 control-time parameters, updates the belief after every action or reading, and
 picks the action with the highest expected net utility over its remaining
 horizon of at most three actions. Utility is the success indicator minus $0.04$

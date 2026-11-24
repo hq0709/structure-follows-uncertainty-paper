@@ -1,16 +1,18 @@
-\begin{table}[!t]
+\begin{table}[H]
 \centering\small
-\caption{Original-budget valve control after training on 1--8 intervening turns. The table gives
-greedy success at $N$ turns, as mean $\pm$ sample SD over five seeds (4,096
-episodes each). Model labels give the memory width. LR is the validation-selected learning
-rate.
-A programmed counter succeeds at every horizon.}
+\caption{Original-budget and fixed-rate valve control after training on 1--8
+intervening turns. Greedy success is the five-seed mean with sample SD
+after $\pm$. The original-budget runs use 4,096 episodes
+per seed and horizon. LR is the validation-selected learning rate.}
 \label{tab:valve-original}
+\label{tab:valvefixed}
 \setlength{\tabcolsep}{5pt}
-\begin{tabular}{llcccc}
+\begin{tabular}{@{}llcccc@{}}
 \toprule
 Memory type & Policy & LR & $N=8$ & $N=32$ & $N=128$ \\
 \midrule
+\multicolumn{6}{l}{\emph{Original budget with validation-selected rates}} \\
+\addlinespace
 \multirow{2}{*}{Phase rotation} & Phase rotation ($H=16$) & 0.003 & \textbf{1.000}\,$\pm$\,.000 & \textbf{.998}\,$\pm$\,.003 & \textbf{.749}\,$\pm$\,.351 \\
  & Phase rotation, angle penalty ($H=16$) & 0.003 & .899\,$\pm$\,.222 & .454\,$\pm$\,.179 & .119\,$\pm$\,.089 \\
 \midrule
@@ -22,6 +24,15 @@ Categorical & Learned cyclic counter & 0.003 & .567\,$\pm$\,.151 & .572\,$\pm$\,
 \multirow{3}{*}{Gated recurrence} & GRU ($H=32$) & 0.001 & .250\,$\pm$\,.006 & .249\,$\pm$\,.004 & .248\,$\pm$\,.004 \\
  & LSTM ($H=16$) & 0.003 & .499\,$\pm$\,.004 & .502\,$\pm$\,.012 & .454\,$\pm$\,.112 \\
  & LSTM ($H=32$) & 0.001 & .251\,$\pm$\,.002 & .249\,$\pm$\,.004 & .251\,$\pm$\,.005 \\
+\midrule
+\multicolumn{6}{l}{\emph{Fixed learning rate ($0.003$)}} \\
+\addlinespace
+\multirow{2}{*}{Phase rotation} & Phase rotation ($H=16$) & 0.003 & 1.000\,$\pm$\,.000 & .998\,$\pm$\,.003 & .749\,$\pm$\,.351 \\
+ & Phase rotation, angle penalty ($H=16$) & 0.003 & .899\,$\pm$\,.222 & .454\,$\pm$\,.179 & .119\,$\pm$\,.089 \\
+\midrule
+\multirow{3}{*}{Gated recurrence} & GRU ($H=32$) & 0.003 & .395\,$\pm$\,.148 & .401\,$\pm$\,.134 & .376\,$\pm$\,.121 \\
+ & LSTM ($H=16$) & 0.003 & .499\,$\pm$\,.004 & .502\,$\pm$\,.012 & .454\,$\pm$\,.112 \\
+ & LSTM ($H=32$) & 0.003 & .561\,$\pm$\,.174 & .546\,$\pm$\,.146 & .510\,$\pm$\,.072 \\
 \bottomrule
 \end{tabular}
 \end{table}

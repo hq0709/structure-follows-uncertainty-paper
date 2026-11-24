@@ -1,5 +1,7 @@
 \section{Properties of the Phase Readout}
 \label{app:proofs}
+The phase rotation in Section~\ref{sec:arch} encodes the count in relative
+phase. The squared-amplitude readout recovers that count at any length.
 
 \myparagraph{Proof of Proposition~\ref{prop:exact}.}
 \begin{proof}
@@ -49,7 +51,7 @@ equals the chance value $1/k$ exactly for a uniform residue, as in parity.
 Along the solution $|z_0|=|z_1|=1$ for every input and every $c$, so $f_a(|z_0|,|z_1|)$ does not
 depend on $c$ and induces a fixed action distribution $q(a)$. Its expected accuracy is
 $\sum_a q(a)\,\Pr[a^\star=a]\le \max_a \Pr[a^\star=a]$. For independent uniform bits and $k=2$ the
-residue is uniform, so the bound is the chance value $1/2$; more generally the bound equals $1/k$ precisely for a uniform residue distribution.
+residue is uniform, so the bound is the chance value $1/2$. In general, the bound equals $1/k$ precisely for a uniform residue distribution.
 \end{proof}
 
 Equation~\eqref{eq:interference} is a correlation with the first Fourier
@@ -60,7 +62,7 @@ magnitudes of the discrete Fourier transform.
 \label{prop:reg}
 The regularizer $R(\theta)=\big\langle\sin^2\!\big(\tfrac{k}{2}\,\theta(o)\big)\big\rangle\ge 0$
 (with $\langle\cdot\rangle$ the average over observations) satisfies $R(\theta)=0$ if and only if
-$\theta(o)\in\tfrac{2\pi}{k}\Z$ for every observation in a finite average (or almost surely for an expectation); its zero set consists exactly of the
+$\theta(o)\in\tfrac{2\pi}{k}\Z$ for every observation in a finite average (or almost surely for an expectation). Its zero set consists exactly of the
 per-event rotations $\theta=2\pi j/k$ for $j\in\{0,\dots,k-1\}$. Among these, every $j$ with
 $\gcd(j,k)=1$ is a faithful generator that yields an exact decoder by Proposition~\ref{prop:exact}
 after relabeling actions $a\mapsto ja\bmod k$, while $j=0$ is a constant phase that cannot represent
@@ -79,42 +81,10 @@ is constant and phase-blind by Lemma~\ref{lem:blind}.
 The degenerate zero at $j=0$ explains an empirical sensitivity: the coefficient $\lambda$ must be
 small enough that the reward objective keeps the rotation away from the no-rotation basin.
 
-\section{Extrapolation across group orders}
-\label{app:kboundary}
-Table~\ref{tab:kscaling} reports reward-trained extrapolation after a
-curriculum of lengths 4 through 14. The decoder margin below quantifies how
-closely the ideal scores are spaced as $k$ increases. Controls with exact angles
-are reported in Appendix~\ref{app:additional}.
-
-\begin{lemma}[Interference margin and its decay in $k$]
-\label{lem:margin}
-In the exact solution of Proposition~\ref{prop:exact}, the squared-amplitude
-score of the correct residue exceeds that of every other action by
-\begin{equation}
-\begin{aligned}
-\Delta_k &\;=\; |\psi_{a^\star}|^2 - \max_{a\neq a^\star}|\psi_a|^2\\
-&\;=\; 4 - \Big(2+2\cos\tfrac{2\pi}{k}\Big) \;=\; 4\sin^2\!\tfrac{\pi}{k}.
-\end{aligned}
-\label{eq:margin}
-\end{equation}
-The margin decays as $4\pi^2/k^2$ for large $k$.
-\end{lemma}
-
-\begin{proof}
-From Equation~\eqref{eq:interference}, $|\psi_a|^2=2+2\cos(\tfrac{2\pi}{k}(c-a))$, maximal at $a=c$
-with value $4$; the nearest competitors $a=c\pm1$ give $2+2\cos\tfrac{2\pi}{k}$. Subtracting and
-using $1-\cos\theta=2\sin^2(\theta/2)$ gives
-$\Delta_k=2\big(1-\cos\tfrac{2\pi}{k}\big)=4\sin^2\tfrac{\pi}{k}$; the small-angle expansion yields
-the $O(1/k^2)$ decay.
-\end{proof}
-
-
-\input{tables/tab_kscaling}
-
-\section{Contraction, Margin, and Stochastic Decoding}
+\subsection{Contraction, margin, and stochastic decoding}
 \label{app:contractive}
-Norm preservation avoids one source of lost separability. The following result makes
-this precise for uniformly contractive memories.
+A uniformly contractive memory loses decoding margin along a common
+suffix. The exact rotation retains a margin set by the cycle size.
 
 \begin{proposition}[Contraction and robust decoding]
 \label{prop:contractive}
@@ -147,66 +117,26 @@ A contractive update can still decode with a vanishing margin. For example,
 $h_0=1$ and $h_t=\gamma(-1)^{e_t}h_{t-1}$ recover parity by
 $\arg\max(h_T,-h_T)$ at every finite length in exact arithmetic.
 
-\section{The Diagonal Complex State-Space Baseline}
-\label{app:lru}
-We compare linear recurrent units (LRUs) on length-10 parity over five
-seeds using the same width of 16, trainer, and budget as Table~\ref{tab:mech}.
-Following \citet{orvieto2023lru}, the recurrence is
-$x_t=\lambda\odot x_{t-1}+\gamma\odot(Bu_t)$, with
-$\lambda_j=\exp(-\exp(\nu_j)+i\exp(\phi_j))$ and
-$\gamma_j=\sqrt{1-|\lambda_j|^2}$. We initialize $|\lambda_j|$ uniformly
-in $[0.9,0.999]$ and its angle in $[0,2\pi)$. In the unit-modulus
-controls we set $|\lambda_j|=\gamma_j=1$. The last row of
-Table~\ref{tab:lru} uses the same unit-modulus recurrence and squared-amplitude readout
-with the angle chosen from the observation. It trains without the
-stabilizers or the length curriculum.
+\begin{lemma}[Interference margin and its decay in $k$]
+\label{lem:margin}
+In the exact solution of Proposition~\ref{prop:exact}, the squared-amplitude
+score of the correct residue exceeds that of every other action by
+\begin{equation}
+\begin{aligned}
+\Delta_k &\;=\; |\psi_{a^\star}|^2 - \max_{a\neq a^\star}|\psi_a|^2\\
+&\;=\; 4 - \Big(2+2\cos\tfrac{2\pi}{k}\Big) \;=\; 4\sin^2\!\tfrac{\pi}{k}.
+\end{aligned}
+\label{eq:margin}
+\end{equation}
+The margin decays as $4\pi^2/k^2$ for large $k$.
+\end{lemma}
 
-For a single fixed linear layer, the state is affine in the input and the
-difference between two quadratic scores has degree at most two. Parity
-for $L>2$ is orthogonal under the uniform input distribution to every
-such polynomial. A polynomial with the same sign as parity on every input would have positive
-inner product with it. A fixed tie rule can be
-absorbed into a small constant shift on the finite input set. This
-restriction applies only to the single linear layer. The two-layer
-variant with a gated linear unit reaches mean accuracy $0.72$ (best seed
-$0.90$) at the training length and falls to chance by $L=20$.
+\begin{proof}
+From Equation~\eqref{eq:interference}, $|\psi_a|^2=2+2\cos(\tfrac{2\pi}{k}(c-a))$, maximal at $a=c$
+with value $4$. The nearest competitors $a=c\pm1$ give $2+2\cos\tfrac{2\pi}{k}$. Subtracting and
+using $1-\cos\theta=2\sin^2(\theta/2)$ gives
+$\Delta_k=2\big(1-\cos\tfrac{2\pi}{k}\big)=4\sin^2\tfrac{\pi}{k}$. The small-angle expansion yields
+the $O(1/k^2)$ decay.
+\end{proof}
 
-\input{tables/tab_mech}
-
-\begin{table}[tbp]
-\centering
-\caption{Diagonal complex state-space baselines on parity. All models train
-at $L=10$. Entries give the five-seed mean and, in parentheses, the best seed.
-A rule that predicts odd only at count five reaches $0.746$ at $L=10$.}
-\label{tab:lru}
-\small
-\setlength{\tabcolsep}{2.5pt}
-\begin{tabular}{lcccc}
-\toprule
-model & params & $L{=}10$ & $L{=}20$ & $L{=}80$ \\
-\midrule
-LRU + linear readout & 259 & 0.50 & --- & --- \\
-LRU + general quadratic & 2.2k & 0.58 & --- & --- \\
-LRU + squared-amplitude readout & 257 & 0.64 (0.76) & 0.50 & 0.50 \\
-LRU, $|\lambda|{=}1$, + squared-amplitude readout & 257 & 0.66 (0.75) & 0.53 & 0.50 \\
-LRU $\times2$ + GLU + squared-amplitude readout & 1.9k & 0.72 (0.90) & 0.50 & 0.50 \\
-\midrule
-\wsrow \textbf{+ observation-conditioned} & & & & \\
-\wsrow \textbf{\quad rotation (Eq.~\ref{eq:evolve})} & \textbf{337} & \textbf{0.996} (1.00) & 0.57 & 0.52 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\section{Symbolic Valve Task and Provenance}
-\label{app:robot}
-In the $\Z_4$ operate task, the policy sees the initial pointer for two
-steps, the target, and the command and execution cues for intervening
-turns. It learns corrective turns and the finish action from terminal
-reward. Training uses 1--8 turns. The wider evaluation
-includes 32, 64, and 128 turns and changes the clockwise probability.
-The programmed counter is an oracle. The learned cyclic-belief counter
-estimates shifts from observations and learns an action head.
-
-The RLBench/CoppeliaSim visualization updates the valve pose with
-\texttt{set\_orientation} and moves the arm with a scripted macro. Its checks
-compare rendered poses with internal simulator state.
+\FloatBarrier

@@ -1,5 +1,10 @@
-\section{Recorded Inertial Sensor Protocol and Results}
+\section{Recorded Inertial Sensors}
 \label{app:imu}
+Sections~\ref{sec:imu-gyro} and~\ref{sec:imu-mag} show that measured
+gyroscope increments support heading extrapolation and that a rest-gated
+bias state reduces drift. On disturbed trials the cyclic filter uses a
+learned pointer likelihood and matches the best neural tracking error at
+the main evaluation horizon.
 
 \paragraph{Data and labels.}
 BROAD contains 39 trials recorded at 285.7~Hz with gyroscope, accelerometer,
@@ -76,13 +81,13 @@ training and reran all Task~B models after correcting the order of two feature
 columns. The original protocol specified two Transformer layers. The reported
 runs use one.
 
-\begin{table}[!htb]
+\begin{table}[H]
 \centering\small
 \setlength{\tabcolsep}{3.5pt}
-\caption{Task~A on held-out trials. Heading error is measured at the window
-end. The upper panel averages NLL over valid steps in each window. The lower
-panel reports NLL at the window end for the integration-prior comparison.
-Classical filters give point estimates.}
+\caption{Task~A heading on held-out trials. Entries give window-end error
+in degrees and NLL in nats, averaged over five seeds per learned model.
+NLL covers valid steps in the upper panel and window ends in the lower
+panel. Classical filters give point estimates.}
 \label{tab:imu-a}
 \begin{tabular}{@{}lrrrrrcrrrrr@{}}
 \toprule
@@ -110,11 +115,12 @@ GRU on the integrated increment & 5.0 & 7.5 & 10.4 & 19.4 & 27.4 && 0.45 & 0.69 
 \end{tabular}
 \end{table}
 
-\begin{table}[!htb]
+\begin{table}[H]
 \centering\small
-\caption{Task~A paired differences, phase rotation with measured angle minus the comparison
-(negative favors the phase rotation with measured angle), with 95\% trial-bootstrap intervals.
-The best network is chosen per length and metric.}
+\caption{Paired differences in Task~A heading. Entries subtract the
+comparison error (degrees) or NLL (nats) from measured-angle rotation,
+with 95\% trial-bootstrap intervals after averaging five seeds per
+learned model. The best network is chosen per length and metric.}
 \label{tab:imu-contrast}
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{rlrrrr}
@@ -132,12 +138,13 @@ Length (s) & Best network & Error (deg) & NLL (nats) & Integrated $u_t$ & VQF (6
 \end{tabular}
 \end{table}
 
-\begin{table}[!htb]
+\begin{table}[H]
 \centering\small
 \setlength{\tabcolsep}{4.5pt}
-\caption{Task~B tracking error (degrees, averaged over valid steps) and test
-NLL (nats) on magnetically disturbed (5) and undisturbed (13) test trials.
-Classical filters give point estimates only.}
+\caption{Task~B heading under magnetic disturbance. Tracking error
+(degrees) and NLL (nats) average valid steps on disturbed (5) and
+undisturbed (13) test trials, with five seeds per learned model.
+Classical filters give point estimates.}
 \label{tab:imu-b}
 \begin{tabular}{lrrrrcrrrrcrr}
 \toprule
@@ -166,8 +173,10 @@ complementary filters by $1.2$--$1.4^\circ$, with intervals excluding zero,
 and matches the GRU's error.
 
 \FloatBarrier
-\section{Gait Phase Protocol and Results}
+\section{Gait Phase}
 \label{app:gait}
+Section~\ref{sec:gait} shows that a joint belief over phase and cadence
+reduces phase error during sensor dropouts longer than those in training.
 
 \paragraph{Data and labels.}
 The Camargo dataset \citep{camargo2021dataset} contains about 20~h of
@@ -248,11 +257,12 @@ are $+0.18$ $[0.01,0.31]$ on clean data, $+0.07$ $[-0.30,0.34]$ at 1~s,
 $-0.54$ $[-0.99,-0.16]$ at 2~s, and $-3.13$ $[-3.99,-2.30]$ at 3~s.
 The filter gives lower RMSE on five of six subjects at 2~s and all six at 3~s.
 
-\begin{table}[!htbp]
+\begin{table}[H]
 \centering\small
-\caption{Gait phase RMSE (\% of cycle) and per-step NLL (nats) on six test
-subjects. Entries give five-seed means with reported SDs. Recovery
-is the first second after a burst. Dashes mark unreported entries.}
+\caption{Gait phase during and after dropouts. RMSE is in percent of the
+cycle and per-step NLL is in nats. Learned entries give five-seed means
+with reported SDs on six test subjects. Recovery is the first second
+after a burst. Dashes mark unreported entries.}
 \label{tab:gait-full}
 \setlength{\tabcolsep}{3pt}
 \begin{tabular}{@{}lrrrrrr@{}}
@@ -285,3 +295,5 @@ Clean & $1.26\pm0.01$ & 1.20 & 1.22 & 1.21 & 4.08 & 2.98 \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\FloatBarrier

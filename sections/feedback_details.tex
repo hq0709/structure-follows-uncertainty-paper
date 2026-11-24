@@ -1,12 +1,16 @@
-\section{Estimation and Feedback Experiment Details}
+\section{Missing Events and the Shared Planner}
 \label{app:feedbackdetails}
+Section~\ref{sec:feedback} shows how pointer readings correct the belief
+after missing turns. Section~\ref{sec:regimes} shows how cyclic beliefs
+improve sensing decisions under a shared planner.
+
+\subsection{Estimation and control protocol}
 \myparagraph{Token constraint and remaining uncertainty.} Adding the token constraint changes NLL by $-0.00095$ nats (descriptive 95\%
 seed-bootstrap interval $[-0.00189,-0.00016]$) and net utility by $+0.098$ points
 ($[-0.048,0.246]$). The constrained filter comes within $0.0168$ nats of
 matched Bayes. On the clean length-80 histories, the constraint fixes every
 update and its NLL is zero, compared with $0.068$ without the constraint.
-Even
-after observing the history, the matched posterior retains an average
+The matched posterior retains an average
 entropy of $0.826$ nats for four-step bursts, compared with $0.558$ nats for
 one-step bursts.
 
@@ -54,7 +58,7 @@ causality at a shared prefix and basic planner decisions.
 Figure~\ref{fig:feedback} shows how pointer readings sharpen the belief and
 how the resulting estimates perform under the shared planner.
 
-\begin{figure}[!htbp]
+\begin{figure}[H]
 \centering
 \includegraphics[width=\linewidth]{figures/feedback_results.pdf}
 \caption{(a)~Nominal NLL at $L=80$ is averaged over five seeds and plotted
@@ -69,7 +73,7 @@ sample SD across seeds.}
 \label{fig:feedback}
 \end{figure}
 
-\section{Planner Regime Sweep}
+\subsection{Planner regime sweep}
 \label{app:regimes}
 The sweep reuses the twenty frozen test checkpoints and the evaluation histories of the
 main experiment. We vary the controller horizon $T_{\mathrm{plan}}$, the sensing
@@ -81,13 +85,15 @@ once per cell and seed and shared by all estimators. With the original draws, $T
 $c=0.08$ and $\rho=0.8$, the sweep code reproduces every per-seed utility of
 Table~\ref{tab:feedback} exactly. A one-step planner never senses, and a cost of $0.4$
 suppresses sensing at $\rho=0.6$, so the 75 grid points contain 53 distinct regimes.
-Table~\ref{tab:regimes} summarizes each estimator over the grid.
+Table~\ref{tab:regimes} shows that the cyclic filters retain the largest
+minimum share of attainable utility among learned estimators.
 
-\begin{table}[h]
+\begin{table}[H]
 \centering\small
-\caption{Utility loss to matched Bayes over the 75-regime grid, in percentage points.
-Retained share is computed for the 40 regimes with at least ten points of headroom.
-Significant losses count regimes with a seed-bootstrap interval below zero.}
+\caption{Utility across the 75-regime planner grid. Loss to matched Bayes is
+in percentage points, based on five paired seeds per regime. Retained share
+uses the 40 regimes with at least ten points of headroom. Significant
+losses count regimes with a seed-bootstrap interval below zero.}
 \label{tab:regimes}
 \begin{tabular}{lrrrrr}
 \toprule
@@ -101,3 +107,5 @@ Nominal Bayes & 0.73 & 0.34 & 95.4\% & 0 & 56 \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\FloatBarrier

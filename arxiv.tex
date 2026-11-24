@@ -83,6 +83,7 @@
 
 \clearpage
 \appendix
+\raggedbottom
 \renewcommand{\thefigure}{S\arabic{figure}}
 \renewcommand{\thetable}{S\arabic{table}}
 \setcounter{figure}{0}
@@ -90,8 +91,10 @@
 \renewcommand{\theHfigure}{appendix.\arabic{figure}}
 \renewcommand{\theHtable}{appendix.\arabic{table}}
 \input{sections/appendix}
-\input{sections/lengthgen_arch}
-\input{sections/additional_experiments}
+\input{sections/app_clean}
+\input{sections/app_valve}
+\input{sections/app_sweep}
+\input{sections/app_noisy}
 \input{sections/feedback_details}
 \input{sections/imu_details}
 

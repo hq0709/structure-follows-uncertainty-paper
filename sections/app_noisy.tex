@@ -1,0 +1,133 @@
+\section{Noisy Event Features and Image Observations}
+\label{app:noisy}
+Section~\ref{sec:noisy} shows that a cyclic belief update preserves counting
+accuracy with noisy event features. These comparisons extend the test to
+image cues and check the information available in frozen phase states.
+
+\subsection{State-tracking adapters}
+\label{app:adapters}
+The adapters use the official DeltaProduct layer at commit
+\texttt{d62241a}, with one 16-dimensional head, value expansion two, output gate,
+negative eigenvalues, no convolution or forgetting, and a residual feedforward
+block. DeltaNet uses one Householder update and DeltaProduct two. The CPU
+recurrent kernel is verified against independent dense outputs and gradients.
+Streaming and full-sequence evaluation agree. Both adapters use the same
+compact policy configuration.
+
+\subsection{Gaussian event features}
+\label{app:gaussian}
+The Gaussian observations have 16 dimensions and noise SD $0.25$.
+The exact-angle variant uses a straight-through quantizer with the original
+injection and readout. The training and evaluation protocol is in
+Appendix~\ref{app:clean-training}. Table~\ref{tab:newseq2} shows that the
+learned cyclic counter sustains high accuracy at long lengths for $k=2,3,4$.
+
+\begin{table}[H]
+\centering\small
+\caption{Counting with Gaussian event features. Greedy accuracy is the five-seed mean
+with sample SD in parentheses. LR is the validation-selected learning rate.}
+\label{tab:newseq2}
+\label{tab:newseq3}
+\label{tab:newseq4}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lccccc}
+\toprule
+Model & LR & $L=14$ & $L=40$ & $L=80$ & $L=160$ \\
+\midrule
+\multicolumn{6}{l}{\emph{$k=2$}} \\
+Learned cyclic counter & 0.001 & 0.999 (0.001) & 0.999 (0.001) & 0.996 (0.001) & 0.994 (0.002) \\
+DeltaNet adapter & 0.003 & 0.999 (0.002) & 0.997 (0.002) & 0.990 (0.006) & 0.938 (0.060) \\
+DeltaProduct adapter & 0.001 & 0.999 (0.001) & 0.997 (0.001) & 0.985 (0.010) & 0.897 (0.097) \\
+LSTM & 0.003 & 0.897 (0.226) & 0.899 (0.220) & 0.899 (0.213) & 0.893 (0.217) \\
+LSTM32 & 0.003 & 0.947 (0.113) & 0.948 (0.108) & 0.940 (0.117) & 0.933 (0.118) \\
+Phase rotation, angle penalty & 0.003 & 0.701 (0.048) & 0.505 (0.040) & 0.496 (0.007) & 0.503 (0.009) \\
+Phase rotation, exact angles & 0.001 & 0.492 (0.021) & 0.500 (0.020) & 0.491 (0.015) & 0.499 (0.015) \\
+Phase rotation, unregularized & 0.003 & 0.730 (0.020) & 0.520 (0.036) & 0.500 (0.026) & 0.502 (0.014) \\
+\midrule
+\multicolumn{6}{l}{\emph{$k=3$}} \\
+Learned cyclic counter & 0.001 & 0.999 (0.001) & 0.999 (0.001) & 0.996 (0.001) & 0.994 (0.002) \\
+DeltaNet adapter & 0.003 & 0.458 (0.069) & 0.345 (0.014) & 0.336 (0.018) & 0.326 (0.014) \\
+DeltaProduct adapter & 0.003 & 0.795 (0.284) & 0.513 (0.280) & 0.332 (0.400) & 0.378 (0.285) \\
+LSTM & 0.003 & 0.683 (0.332) & 0.663 (0.311) & 0.615 (0.310) & 0.576 (0.313) \\
+LSTM32 & 0.003 & 0.967 (0.071) & 0.964 (0.067) & 0.955 (0.076) & 0.944 (0.075) \\
+Phase rotation, angle penalty & 0.003 & 0.719 (0.019) & 0.321 (0.098) & 0.335 (0.023) & 0.335 (0.010) \\
+Phase rotation, exact angles & 0.003 & 0.841 (0.283) & 0.827 (0.266) & 0.780 (0.251) & 0.699 (0.214) \\
+Phase rotation, unregularized & 0.003 & 0.715 (0.035) & 0.345 (0.098) & 0.333 (0.036) & 0.325 (0.014) \\
+\midrule
+\multicolumn{6}{l}{\emph{$k=4$}} \\
+Learned cyclic counter & 0.001 & 0.999 (0.001) & 0.998 (0.001) & 0.996 (0.002) & 0.994 (0.002) \\
+DeltaNet adapter & 0.001 & 0.310 (0.083) & 0.247 (0.006) & 0.248 (0.021) & 0.258 (0.018) \\
+DeltaProduct adapter & 0.001 & 0.486 (0.306) & 0.450 (0.328) & 0.429 (0.278) & 0.322 (0.094) \\
+LSTM & 0.001 & 0.702 (0.406) & 0.694 (0.411) & 0.696 (0.402) & 0.678 (0.414) \\
+LSTM32 & 0.003 & 0.765 (0.345) & 0.771 (0.333) & 0.773 (0.323) & 0.756 (0.338) \\
+Phase rotation, angle penalty & 0.003 & 0.689 (0.092) & 0.351 (0.179) & 0.303 (0.072) & 0.248 (0.008) \\
+Phase rotation, exact angles & 0.003 & 0.884 (0.079) & 0.859 (0.065) & 0.788 (0.084) & 0.562 (0.081) \\
+Phase rotation, unregularized & 0.003 & 0.724 (0.016) & 0.416 (0.067) & 0.271 (0.067) & 0.239 (0.006) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Image observations}
+A shared CNN and the memory are trained jointly from raw MNIST images. Odd
+digits constitute latent events. Only terminal reward supervises their count
+modulo $k$. The first 50,000 training images are used for training and the
+remaining 10,000 for validation. Evaluation uses the official test set. Training lengths
+$1,2,4,6,8$ include short credit-assignment paths. A2C uses batch 128, learning
+rate $0.001$, and 6,000 updates. Evaluation uses 2,048 episodes per seed.
+Table~\ref{tab:newvision} shows that the cyclic counter and wider LSTM
+retain the most accuracy as the image sequences grow longer.
+
+\begin{table}[H]
+\centering\small
+\caption{Event counting from raw images. Entries give mean greedy accuracy with sample
+SD in parentheses over five seeds per model and group order.}
+\label{tab:newvision}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcccc}
+\toprule
+Model / $k$ & $L=1$ & $L=8$ & $L=40$ & $L=80$ \\
+\midrule
+Learned cyclic counter / 2 & 0.989 (0.005) & 0.905 (0.022) & 0.679 (0.037) & 0.562 (0.031) \\
+Learned cyclic counter / 3 & 0.989 (0.001) & 0.911 (0.009) & 0.666 (0.017) & 0.495 (0.030) \\
+DeltaProduct adapter / 2 & 0.987 (0.003) & 0.895 (0.019) & 0.652 (0.030) & 0.541 (0.023) \\
+DeltaProduct adapter / 3 & 0.988 (0.005) & 0.909 (0.024) & 0.528 (0.042) & 0.316 (0.040) \\
+LSTM32 / 2 & 0.991 (0.001) & 0.929 (0.009) & 0.741 (0.029) & 0.613 (0.034) \\
+LSTM32 / 3 & 0.989 (0.002) & 0.909 (0.010) & 0.647 (0.017) & 0.490 (0.013) \\
+Phase rotation, angle penalty / 2 & 0.982 (0.005) & 0.673 (0.024) & 0.500 (0.013) & 0.500 (0.019) \\
+Phase rotation, angle penalty / 3 & 0.983 (0.003) & 0.689 (0.019) & 0.329 (0.007) & 0.334 (0.010) \\
+Phase rotation, unregularized / 2 & 0.983 (0.007) & 0.668 (0.034) & 0.509 (0.012) & 0.494 (0.014) \\
+Phase rotation, unregularized / 3 & 0.983 (0.003) & 0.666 (0.032) & 0.334 (0.010) & 0.338 (0.010) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Frozen-state probes with noisy events}
+The noisy probes reuse the readout training protocol in
+Appendix~\ref{app:clean-probes}. Table~\ref{tab:newfrozen} shows that accuracy
+approaches chance for all readouts as sequences grow longer. Replaying all
+60 fitted heads across the clean and noisy probes reproduces every test
+accuracy exactly.
+
+\begin{table}[H]
+\centering\small
+\caption{Frozen-state probes with noisy events. Entries give mean greedy accuracy
+with sample SD in parentheses over five seeds, with 2,048 test examples per seed.}
+\label{tab:newfrozen}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcccc}
+\toprule
+$k$ / head & $L=14$ & $L=40$ & $L=80$ & $L=160$ \\
+\midrule
+3 / Original head & 0.713 (0.015) & 0.324 (0.095) & 0.331 (0.011) & 0.330 (0.008) \\
+3 / Squared-amplitude readout & 0.711 (0.009) & 0.340 (0.068) & 0.332 (0.011) & 0.328 (0.010) \\
+3 / Absolute linear & 0.456 (0.190) & 0.363 (0.056) & 0.337 (0.011) & 0.331 (0.009) \\
+3 / Invariant quadratic & 0.700 (0.018) & 0.359 (0.047) & 0.329 (0.017) & 0.336 (0.009) \\
+4 / Original head & 0.660 (0.067) & 0.402 (0.070) & 0.286 (0.059) & 0.253 (0.010) \\
+4 / Squared-amplitude readout & 0.703 (0.021) & 0.424 (0.057) & 0.285 (0.061) & 0.256 (0.013) \\
+4 / Absolute linear & 0.713 (0.009) & 0.375 (0.113) & 0.253 (0.091) & 0.257 (0.013) \\
+4 / Invariant quadratic & 0.710 (0.008) & 0.398 (0.082) & 0.265 (0.080) & 0.260 (0.006) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier

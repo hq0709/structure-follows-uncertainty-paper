@@ -1,0 +1,169 @@
+\section{Clean Events and Terminal Reward}
+\label{app:clean}
+\label{app:additional}
+Section~\ref{sec:rl} shows that phase rotation can learn to count from a
+terminal reward and extrapolate beyond the training lengths. These controls
+trace that result to the input-set angle and the information carried by the
+phase readout.
+
+\subsection{Training and evaluation}
+\label{app:clean-training}
+The sequence policies use advantage actor-critic, a terminal reward of
+$\pm1$, full-episode backpropagation, Adam,
+and gradient clipping at norm~1. The default settings are width 16, batch size
+256, and a learning rate of $0.003$. The fixed-length phase rotation uses an
+unregularized, unnormalized state update with diagonal rotation. The length
+curriculum uses normalization and the group-angle penalty from
+Section~\ref{sec:stab}.
+
+The clean sequence control and the noisy feature experiments in
+Appendix~\ref{app:noisy} share a trainer. Each of eight families uses two
+learning rates ($0.001,0.003$) and two tuning seeds (100,101), each with 4,000 updates.
+Selection averages the last three $L=14$ validation evaluations. Five independent
+seeds (0--4) then run 6,000 A2C updates with batch 256, terminal reward,
+and training lengths $4,6,8,10,12,14$. Each test uses 1,024 episodes per seed.
+
+\subsection{Extrapolation across group orders}
+\label{app:kboundary}
+Table~\ref{tab:kscaling} compares greedy accuracy across cycle sizes after
+training with terminal reward on lengths 4 through 14. Phase rotation
+extrapolates best on the smaller cycles. The decoding margin in
+Lemma~\ref{lem:margin} quantifies how tightly the ideal scores are spaced as
+$k$ increases. The clean sequence control below tests exact angles
+(Table~\ref{tab:newseq5}).
+
+\input{tables/tab_kscaling}
+
+\subsection{Diagonal complex state-space baseline and readout ablations}
+\label{app:lru}
+Table~\ref{tab:mech} tests phase updates and readouts in a matched parity
+comparison. Table~\ref{tab:lru} compares linear recurrent units (LRUs) on
+length-10 parity over five seeds, using the same width of 16, trainer, and
+budget.
+Following \citet{orvieto2023lru}, the recurrence is
+$x_t=\lambda\odot x_{t-1}+\gamma\odot(Bu_t)$, with
+$\lambda_j=\exp(-\exp(\nu_j)+i\exp(\phi_j))$ and
+$\gamma_j=\sqrt{1-|\lambda_j|^2}$. We initialize $|\lambda_j|$ uniformly
+in $[0.9,0.999]$ and its angle in $[0,2\pi)$. In the unit-modulus
+controls we set $|\lambda_j|=\gamma_j=1$. The input-conditioned variant in
+Table~\ref{tab:lru} uses the same unit-modulus recurrence and squared-amplitude
+readout with the angle set by the observation. It trains without the
+stabilizers or the length curriculum.
+
+For a single fixed linear layer, the state is affine in the input and the
+difference between two quadratic scores has degree at most two. Parity
+for $L>2$ is orthogonal under the uniform input distribution to every
+such polynomial. A polynomial with the same sign as parity on every input
+would have positive inner product with it. A small constant shift can absorb
+a fixed tie rule on the finite input set. Stacking recurrent layers with a
+gated linear unit changes the degree bound.
+The two-layer variant reaches mean accuracy $0.72$ (best seed
+$0.90$) at the training length and falls to chance by $L=20$.
+
+\input{tables/tab_mech}
+
+\begin{table}[H]
+\centering
+\caption{Diagonal complex state-space baselines on parity. Models train at $L=10$.
+Entries give mean greedy accuracy over five seeds, with the best seed in
+parentheses. Predicting odd only at count five gives $0.746$ at $L=10$.}
+\label{tab:lru}
+\small
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{lcccc}
+\toprule
+model & params & $L{=}10$ & $L{=}20$ & $L{=}80$ \\
+\midrule
+LRU + linear readout & 259 & 0.50 & --- & --- \\
+LRU + general quadratic & 2.2k & 0.58 & --- & --- \\
+LRU + squared-amplitude readout & 257 & 0.64 (0.76) & 0.50 & 0.50 \\
+LRU, $|\lambda|{=}1$, + squared-amplitude readout & 257 & 0.66 (0.75) & 0.53 & 0.50 \\
+LRU $\times2$ + GLU + squared-amplitude readout & 1.9k & 0.72 (0.90) & 0.50 & 0.50 \\
+\midrule
+\wsrow \textbf{+ observation-conditioned} & & & & \\
+\wsrow \textbf{\quad rotation (Eq.~\ref{eq:evolve})} & \textbf{337} & \textbf{0.996} (1.00) & 0.57 & 0.52 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Generalization with terminal state labels}
+\label{sec:lengthgen-arch}
+
+Terminal state labels test extrapolation under direct supervision. Each
+model observes a binary event sequence and receives a single label for the final
+residue. Every model minimizes terminal-label NLL for 22,000 Adam updates at
+learning rate $0.0015$, batch size 256, and lengths $4,6,\ldots,14$. The
+phase-rotation model uses an angle lattice and Fourier readout initialization.
+
+Table~\ref{tab:lengthgen-arch} compares ten seeds at the common horizon $L=400$.
+The phase rotation with an angle lattice solves a majority of seeds at every
+cycle size. GRU and LSTM nearly always extrapolate at $k=3$--$5$ in this
+terminal-label protocol. The successful-seed counts at $L=1600$ for
+$k=2,3,4,5$ are
+$(9,9,6,9)$ for the phase-rotation model, $(0,10,10,9)$ for GRU,
+and $(1,9,10,10)$ for LSTM. Archived predictions reproduce these counts.
+\input{tables/tab_lengthgen_arch}
+
+\subsection{Clean sequence control}
+On clean inputs, a cyclic counter can carry the event count by applying exact
+shifts. Table~\ref{tab:newseq5} shows that the learned counter maintains perfect
+greedy accuracy across evaluation lengths for $k=5$, with the wider LSTM
+close behind.
+Appendix~\ref{app:adapters} describes the state-tracking adapters.
+
+\begin{table}[H]
+\centering\small
+\caption{Clean sequence control for $k=5$. Greedy accuracy is the five-seed mean
+with sample SD in parentheses. LR is the validation-selected learning rate.}
+\label{tab:newseq5}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lccccc}
+\toprule
+Model & LR & $L=14$ & $L=40$ & $L=80$ & $L=160$ \\
+\midrule
+Learned cyclic counter & 0.001 & 1.000 (0.000) & 1.000 (0.000) & 1.000 (0.000) & 1.000 (0.000) \\
+DeltaNet adapter & 0.003 & 0.388 (0.090) & 0.194 (0.010) & 0.195 (0.013) & 0.203 (0.015) \\
+DeltaProduct adapter & 0.001 & 0.808 (0.228) & 0.646 (0.406) & 0.635 (0.411) & 0.571 (0.347) \\
+LSTM & 0.003 & 0.476 (0.336) & 0.367 (0.354) & 0.359 (0.359) & 0.352 (0.362) \\
+LSTM32 & 0.001 & 0.999 (0.001) & 0.999 (0.001) & 0.998 (0.005) & 0.994 (0.011) \\
+Phase rotation, angle penalty & 0.003 & 0.791 (0.140) & 0.647 (0.346) & 0.595 (0.309) & 0.252 (0.079) \\
+Phase rotation, exact angles & 0.003 & 0.946 (0.085) & 0.948 (0.077) & 0.720 (0.250) & 0.400 (0.258) \\
+Phase rotation, unregularized & 0.003 & 0.712 (0.097) & 0.457 (0.233) & 0.498 (0.222) & 0.162 (0.082) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Frozen-state probes with clean events}
+\label{app:clean-probes}
+We freeze identical recurrence checkpoints and fit readout heads on the same
+6,144 labelled examples, using identical minibatch index streams for 6,000 Adam
+updates at learning rate $0.003$.
+The absolute-linear head sees all real and imaginary channels. The invariant
+quadratic head sees every pairwise relative-phase product and has more parameters.
+Both the squared-amplitude and invariant quadratic readouts fit the clean
+parity training set perfectly. Table~\ref{tab:newfrozenclean} shows the
+squared-amplitude readout's clean parity advantage at $L=80$.
+
+\begin{table}[H]
+\centering\small
+\caption{Frozen-state probes with clean events. Entries give mean greedy accuracy
+with sample SD in parentheses over five seeds, with 2,048 test examples per seed.}
+\label{tab:newfrozenclean}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcccc}
+\toprule
+$k$ / head & $L=14$ & $L=40$ & $L=80$ & $L=160$ \\
+\midrule
+2 / Original head & 1.000 (0.000) & 1.000 (0.000) & 0.904 (0.215) & 0.484 (0.469) \\
+2 / Squared-amplitude readout & 1.000 (0.000) & 1.000 (0.000) & 0.999 (0.003) & 0.586 (0.442) \\
+2 / Absolute linear & 0.504 (0.132) & 0.480 (0.041) & 0.486 (0.058) & 0.508 (0.031) \\
+2 / Invariant quadratic & 1.000 (0.000) & 1.000 (0.000) & 0.757 (0.408) & 0.496 (0.396) \\
+3 / Original head & 0.906 (0.092) & 0.715 (0.275) & 0.630 (0.358) & 0.573 (0.352) \\
+3 / Squared-amplitude readout & 0.968 (0.045) & 0.652 (0.349) & 0.596 (0.374) & 0.599 (0.365) \\
+3 / Absolute linear & 1.000 (0.001) & 0.738 (0.331) & 0.588 (0.400) & 0.556 (0.412) \\
+3 / Invariant quadratic & 1.000 (0.000) & 0.802 (0.257) & 0.621 (0.401) & 0.563 (0.405) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier

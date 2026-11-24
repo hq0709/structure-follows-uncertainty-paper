@@ -1,0 +1,40 @@
+\section{Valve Control}
+\label{app:valve}
+The valve-control experiment in Section~\ref{sec:transfer} shows that phase
+rotation learned from terminal reward succeeds beyond the training horizon.
+The original-budget and fixed-rate comparisons test the same task across
+tuning protocols.
+
+\subsection{Symbolic valve task and provenance}
+\label{app:robot}
+In the $\Z_4$ operate task, the policy sees the initial pointer for two
+steps, the target, and the command and execution cues for intervening
+turns. It learns corrective turns and the finish action from terminal
+reward. Training uses 1--8 turns. The wider evaluation
+includes 32, 64, and 128 turns and changes the clockwise probability.
+The programmed counter is an oracle. The learned cyclic counter estimates
+observation-conditioned shifts of its belief and learns an action head.
+
+The RLBench/CoppeliaSim visualization updates the valve pose with
+\texttt{set\_orientation} and moves the arm with a scripted macro. Its checks
+compare rendered poses with internal simulator state.
+
+\subsection{Training and evaluation}
+The policies learn from terminal reward on the operate task. In the re-tuned
+comparison (Table~\ref{tab:valve}), every family receives 12{,}000 A2C updates
+and the learning-rate grid $\{3\times10^{-4},10^{-3},3\times10^{-3},10^{-2}\}$.
+The GRU and LSTM also use widths 16, 32, and 64. Selection uses $N=8$ success
+on tuning seeds 100 and 101. The selected learning rates are evaluated on five
+fresh seeds (0--4), with 4{,}096 balanced greedy episodes per seed and horizon.
+The programmed counter succeeds at every horizon.
+
+Table~\ref{tab:valve-original} shows that phase rotation leads both the
+original-budget and fixed-rate comparisons. The original-budget runs use
+4,000 updates for tuning and 6,000 in the final run. Selection averaged the
+last three $N=8$ validation evaluations. The validation-based runs followed
+the fixed-rate experiment. Twenty animated episodes per horizon ($N=8,32$)
+for each of 25 fixed-rate policies give 1,000 simulator episodes.
+
+\input{tables/tab_valve_original}
+
+\FloatBarrier
