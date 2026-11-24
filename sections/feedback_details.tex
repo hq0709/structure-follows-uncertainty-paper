@@ -80,12 +80,6 @@ We independently verify short-horizon posteriors by summing over latent
 trajectories. We also verify probability normalization, finite gradients,
 causality at a shared prefix and basic planner decisions.
 
-Table~\ref{tab:feedback} compares estimation and default-planner utility
-across the nominal and shifted tests at $L=40$ and $80$.
-
-\input{tables/tab_feedback}
-\FloatBarrier
-
 Figure~\ref{fig:feedback} shows how pointer readings sharpen the belief and
 how the resulting estimates perform under the shared planner. At length 80
 under the pointer-noise shift, matched Bayes leads to $1.05$ readings per
@@ -128,14 +122,6 @@ token-constrained filter stays within $0.66$ points. With at least ten
 points of headroom, every learned estimator retains at least $89.8\%$ of
 the available gain. The largest paired gain of the token-constrained
 filter over the GRU is $1.47$ points.
-
-Cheap, reliable readings make the sensing decision especially sensitive to
-belief quality. An overconfident belief lowers the estimated value of taking
-a reading. With a two-action horizon, a $0.02$ reading cost, and reliability
-$0.95$, the GRU belief leads to $0.64$ readings per episode, compared with $0.84$
-for matched Bayes. The filters retain the value of sensing across the grid,
-including three settings with GRU utility up to $0.92$ percentage points
-below the uniform-belief baseline.
 
 \begin{table}[H]
 \centering\small

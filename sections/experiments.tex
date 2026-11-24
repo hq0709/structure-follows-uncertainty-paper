@@ -17,14 +17,14 @@ At the common budget of $7.68$ million environment steps, four of five
 phase-rotation seeds and one of five Transformer seeds reach the parity
 threshold (Figure~\ref{fig:reward}a). On $\Z_3$, all five seeds of both
 models reach the threshold, and phase rotation reaches both tasks'
-thresholds sooner in median steps (Figure~\ref{fig:reward}b). After
+thresholds sooner in median steps (Figure~\ref{fig:reward}b and
+Table~\ref{tab:main}). After
 training on lengths 4 through 14, phase rotation reaches $1.00$ on parity
 and $0.90$ on $\Z_3$ at length 40.
 \label{sec:lengthgen}
-In a matched parity ablation, setting the angle from the input raises
-accuracy from $0.66$ to $0.996$ at length 10.
-Appendix~\ref{app:clean} gives the protocols and ablations, including the
-learning results in Appendix Table~\ref{tab:main}.
+\input{tables/tab_main}
+Appendix~\ref{app:clean} gives the protocols and learning curves' summary
+statistics.
 
 \begin{figure}[!htbp]
 \centering
@@ -42,6 +42,18 @@ the training range $N\leq8$.}
 \label{fig:reward}
 \end{figure}
 
+\myparagraph{The input-set angle.}
+In a matched parity ablation, a diagonal complex recurrent model with a
+fixed unit-modulus rotation and a squared-amplitude readout averages
+$0.66$ accuracy at length 10. Setting the angle from the input raises
+accuracy to $0.996$ at the same width and training budget
+(Appendix~\ref{app:lru}). The input-conditioned model reaches $0.57$ at
+length 20 without stabilizers. Normalization and the angle penalty target
+accumulating angular error (Section~\ref{sec:stab}). Phase-advance and
+readout ablations link the gains to the phase carried by the transition.
+On frozen recurrent states, the squared-amplitude readout gives the
+highest clean parity accuracy at length 80 (Appendix~\ref{app:clean-probes}).
+
 \phantomsection
 \myparagraph{Using the count to operate a valve.}
 \label{sec:transfer}
@@ -51,30 +63,50 @@ It makes corrective turns and selects the finish action. Training uses
 1--8 intervening turns and terminal reward, and $N$ denotes the number of
 intervening turns at evaluation.
 
-Phase rotation reaches $1.000$ success at $N=8$ and $0.997$ at $N=32$, four
+The re-tuned comparison gives every family three times the original tuning
+budget and a wider learning-rate grid, with a width sweep for the GRU and
+LSTM. Phase rotation reaches $1.000$ success at $N=8$ and $0.997$ at $N=32$, four
 times the longest training horizon, compared with $0.915$ and $0.801$ for
-the best budget-matched baseline (Figure~\ref{fig:reward}c).
-Appendix~\ref{app:valve} gives the tuning protocol and longer-horizon
-results in Appendix Table~\ref{tab:valve}.
+the best budget-matched baseline (Table~\ref{tab:valve}, Figure~\ref{fig:reward}c).
+At $N=128$, sixteen times the longest training horizon, phase rotation
+reaches $0.673$ and the best learned baseline reaches $0.684$. The
+programmed counter succeeds at every horizon. Appendix~\ref{app:valve}
+gives the tuning protocol and original-budget results.
+
+\input{tables/tab_valve}
 
 \subsection{One protocol, rising uncertainty}
 \label{sec:sweep}
 We start from an exact pointer on a four-position valve, then replace each
 delivered turn token with a uniformly drawn alternative with probability $r$.
 The increments regime delivers every token, while the missing regime erases
-bursts and supplies noisy pointer readings. All estimators share a training
-and tuning budget under dense labels, terminal labels, or terminal reward.
+bursts and supplies noisy pointer readings.
 
-On clean inputs with a terminal label or reward, the measured-angle rotation
-and the cyclic filters reach $1.000$ accuracy through $L=160$, while the GRU,
-LSTM, and learned-angle rotation stay at chance. At $r=0.01$ and $L=40$, the
-misread-aware filter reaches terminal-label NLL of $0.966$, compared with
-$5.839$ for the token-constrained filter and $0.965$ for matched Bayes
+Each learned model trains at the test misread rate on lengths $6$, $10$,
+and $14$ for 3{,}000 Adam updates with batch size 96 and gradient clipping
+at norm 1. Two tuning seeds evaluate the learning-rate grid
+$\{10^{-3},3\times 10^{-3},10^{-2}\}$. Validation NLL selects the rate
+for dense and terminal labels, and validation accuracy selects it for
+terminal reward. We report final-state NLL and accuracy over five test
+seeds and 1{,}024 episodes per seed and cell.
+
+Table~\ref{tab:sweep} compares the training signals at $L=40$. On clean
+inputs with a terminal label or reward, the measured-angle rotation and
+the cyclic filters reach $1.000$ accuracy through $L=160$, while the GRU,
+LSTM, and learned-angle rotation stay at chance.
+
+\input{tables/tab_sweep}
+
+At $r=0.01$ and $L=40$, the token-constrained filter matches Bayes in
+accuracy. Its NLL rises because it treats reported shifts as certain and
+assigns near-zero probability to the true position if misreads change the
+final residue. We floor probabilities at $10^{-8}$ for NLL. The misread-aware
+filter reaches terminal-label NLL of $0.966$, compared with $5.839$ for
+the token-constrained filter and $0.965$ for matched Bayes
 (Figure~\ref{fig:sweep}a). With missing tokens and noisy readings at $r=0.3$
 and $L=160$, it matches Bayes at $1.263$ NLL under state labels and leads
 the learned models at $1.637$ under reward (Figure~\ref{fig:sweep}c).
-Appendix~\ref{app:sweep} gives the full sweep, with the $L=40$ comparison
-in Appendix Table~\ref{tab:sweep}.
+Appendix~\ref{app:sweep} gives the full sweep.
 
 \begin{figure}[!htbp]
 \centering
@@ -96,9 +128,18 @@ LSTM.}
 We replace the observed bit with a 16-dimensional Gaussian feature vector.
 The learned cyclic counter predicts event probabilities and mixes exact
 shifts of the count belief. It reaches $0.994$ accuracy at $L=160$ for
-$k=2,3,4$. At $k=4$, the width-32 LSTM reaches $0.756$ and phase rotation
-with exact angles reaches $0.562$. Appendix Table~\ref{tab:noisy}
-summarizes the comparison.
+$k=2,3,4$ (Table~\ref{tab:noisy}).
+
+A learned-angle rotation represents each noisy cue by a single angle.
+The cue can support multiple events, so a wrong increment shifts the
+estimate and later updates accumulate these errors. With an angle penalty,
+accuracy approaches chance by length 40 for $k=2,3$. At $k=4$ and $L=160$,
+enforcing exact multiples of $2\pi/k$ raises accuracy from $0.248$ to
+$0.562$, compared with $0.756$ for the width-32 LSTM. The cyclic counter
+carries event uncertainty forward by assigning probabilities to the
+possible shifts.
+
+\input{tables/tab_noisy}
 
 \subsection{Missing events: estimating the belief}
 \label{sec:feedback}
@@ -113,7 +154,17 @@ twelve steps, the token-constrained filter reaches $0.937$ NLL, compared with
 $0.982$ for phase rotation and $1.011$ for the GRU. Both cyclic filters
 achieve near-zero circular regret. At length 80, the token-constrained
 filter's NLL falls from $1.361$ immediately before a reading to $0.591$
-at the reading. Appendix Table~\ref{tab:feedback} gives the comparisons.
+at the reading.
+
+Table~\ref{tab:feedback} compares estimation and default-planner utility
+on the same histories. Nominal Bayes uses the training parameters, and
+matched Bayes uses the test parameters. Both compute posteriors from the
+same observations as the learned estimators. The tests include shifts in
+turn probabilities and pointer reliability. The token-constrained filter
+comes within $0.0168$ nats of matched Bayes and gives lower NLL than
+nominal Bayes ($0.937$ versus $0.944$).
+
+\input{tables/tab_feedback}
 
 \subsection{Acting on the belief with a shared planner}
 \label{sec:regimes}
@@ -123,8 +174,9 @@ minus action costs. We vary the horizon, reading cost, and reading reliability
 with the estimators fixed.
 
 In the default setting, the token-constrained filter reaches $63.0$ utility
-points, compared with $62.3$ for both the GRU and phase rotation (Appendix
-Table~\ref{tab:feedback}). Both cyclic filters match or exceed the GRU in all
+points, compared with $62.3$ for both the GRU and phase rotation, $62.7$
+for nominal Bayes, and $63.3$ for matched Bayes (Table~\ref{tab:feedback}).
+Both cyclic filters match or exceed the GRU in all
 75 settings, with a positive paired bootstrap interval for the constrained
 filter in 47 (Figure~\ref{fig:regimes}). Both retain at least $95\%$ of the
 attainable gain in settings with at least ten points of headroom. The
@@ -149,3 +201,11 @@ points for the 47 intervals above zero and open points for the 28 intervals
 including zero.}
 \label{fig:regimes}
 \end{figure}
+
+Cheap, reliable readings make the sensing decision sensitive to belief quality.
+An overconfident belief lowers the estimated value of taking a reading. With a
+two-action horizon, a $0.02$ reading cost, and reliability $0.95$, the GRU
+belief leads to $0.64$ readings per episode, compared with $0.84$ for matched
+Bayes. The cyclic filters preserve sensing utility across the grid. The GRU
+falls below the uniform-belief baseline in three settings, by up to $0.92$
+percentage points.

@@ -1,0 +1,21 @@
+\begin{table}[!t]
+\centering\small
+\caption{Gait phase RMSE (\% of cycle) on six test subjects, as five-seed
+means with reported SDs. Burst lengths of 2~s and 3~s exceed the
+training dropouts. The last column gives RMSE in the second after a 3~s burst.
+Appendix~\ref{app:gait} reports the remaining conditions and NLL.}
+\label{tab:gait}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+Model & Params & Clean & 1~s & 2~s & 3~s & After 3~s \\
+\midrule
+Cyclic filter (ours) & 21,090 & $2.04\pm0.03$ & $2.91\pm0.03$ & $\mathbf{5.41}\pm0.14$ & $\mathbf{9.04}\pm0.17$ & $\mathbf{4.83}\pm0.11$ \\
+LSTM & 42,994 & $1.84\pm0.02$ & $2.82\pm0.03$ & $5.94\pm0.17$ & $12.33\pm0.59$ & $6.88\pm0.36$ \\
+GRU & 34,674 & $1.88\pm0.04$ & $2.99\pm0.07$ & $6.89\pm0.38$ & $13.47\pm0.55$ & $7.27\pm0.46$ \\
+Temporal CNN & 37,634 & $2.02\pm0.04$ & $3.69\pm0.07$ & $13.14\pm0.02$ & $18.98\pm0.02$ & $5.01\pm0.23$ \\
+Phase rotation (learned angle) & 11,776 & $28.86\pm0.02$ & 28.86 & 28.86 & 28.86 & --- \\
+Time-based estimator & --- & 8.25 & 21.49 & 21.53 & 24.35 & 21.05 \\
+\bottomrule
+\end{tabular}
+\end{table}

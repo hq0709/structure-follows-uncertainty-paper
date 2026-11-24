@@ -76,25 +76,46 @@ filter, $46.5^\circ$ for learned-angle rotation, and $10.9^\circ$ for the
 LSTM (filter-minus-LSTM difference $-1.4^\circ$, paired interval $[-3.4,0.6]$).
 In Figure~\ref{fig:imu}d, full-window tracking errors are $12.4^\circ$ for
 the LSTM, $62.3^\circ$ for learned-angle rotation, and $7.5^\circ$ for the
-cyclic filter. Appendix Table~\ref{tab:imu-b} reports results by
-disturbance status.
-
-\FloatBarrier
+cyclic filter. Appendix~\ref{app:imu} reports results by disturbance status.
 
 \subsection{Unobserved increments: gait phase from a shank IMU}
 \label{sec:gait}
-We estimate gait phase online from a shank IMU. The cyclic filter propagates
-a joint belief over phase and cadence and corrects it with a learned
-likelihood on received packets. The 2~s and 3~s test bursts exceed the
-longest training dropout.
+We estimate gait phase online from a shank IMU. Camargo contains 3,147
+trials from 22 adults across treadmill, level-ground, ramp, and stair
+walking. We train on 13 subjects, select learning rates on three, and
+test on six. The learned models train on 4~s windows and receive the
+same inertial signals. Test windows span 20~s, with dropout bursts
+every 4~s. The 2~s and 3~s test bursts exceed the longest training
+dropout.
+
+The cyclic filter propagates a joint belief over phase and cadence. It
+shifts each phase distribution by its cadence and updates cadence with
+a random walk. The learned pointer likelihood corrects the prediction
+on received packets. During dropouts, the prediction advances the
+belief on its own.
+
+For a predicted phase distribution, we take its circular mean as the phase
+estimate. We compute RMSE from circular phase errors as a percentage of
+the gait cycle. Appendix~\ref{app:gait} gives the full evaluation protocol.
+
+\FloatBarrier
 
 Learned-angle rotation stays at chance ($28.86\%$ RMSE), while the cyclic
 filter tracks phase through extended dropouts (Figure~\ref{fig:gait}).
 With 3~s bursts, the filter reaches $9.04\%$ RMSE, $27\%$ below the LSTM's
 $12.33\%$, with lower error on all six test subjects. The paired mean
 difference is $-3.13$ points (95\% subject-bootstrap interval
-$[-3.99,-2.30]$). Appendix Table~\ref{tab:gait} reports the other
-dropout lengths and recovery errors.
+$[-3.99,-2.30]$). Table~\ref{tab:gait} reports RMSE across dropout lengths
+and in the first second after a 3~s burst.
+
+On clean data the cyclic filter, LSTM, GRU, and temporal CNN span
+$1.84$--$2.04\%$ RMSE. With 1~s bursts the filter, LSTM, and GRU span
+$2.82$--$2.99\%$. At 2~s, the filter reaches $5.41\%$ and the LSTM
+reaches $5.94\%$, with lower filter error for five of six test subjects.
+In the first second after a 3~s burst, the filter reaches $4.83\%$ and
+the LSTM reaches $6.88\%$. At 3~s the temporal CNN reaches $18.98\%$
+with its finite input history, and the time-based estimator reaches
+$24.35\%$ by advancing phase at the previous stride's cadence.
 
 \begin{figure}[!htbp]
 \centering
@@ -110,3 +131,6 @@ shading for dropouts longer than any used in training.
 of six test subjects.}
 \label{fig:gait}
 \end{figure}
+
+
+\input{tables/tab_gait}

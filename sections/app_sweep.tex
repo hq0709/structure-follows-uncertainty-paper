@@ -43,24 +43,15 @@ episodes per seed and cell.}
 Table~\ref{tab:sweep} compares the clean and $r=0.01$ results at $L=40$
 across training signals.
 
-\input{tables/tab_sweep}
-\FloatBarrier
-
 Both gated models fit the clean count under dense supervision. With a
 terminal label, their NLL and the learned-angle rotation's NLL are
-$1.386$--$1.387$, close to chance NLL of $1.386$ nats. With misreads, the
-token-constrained filter matches Bayes in point accuracy. Its NLL rises
-after misreads change the final residue because the reported shifts assign
-near-zero probability to the true position. The NLL calculation floors
-probabilities at $10^{-8}$. The misread-aware filter matches Bayes accuracy
+$1.386$--$1.387$, close to chance NLL of $1.386$ nats. The misread-aware
+filter matches Bayes accuracy
 at every tested rate under all three signals and reaches $0.972$ NLL at
 $r=0.01$ with terminal reward (Figure~\ref{fig:sweep}b).
 
-Tables~\ref{tab:sweep-inc-dense}, \ref{tab:sweep-inc-terminal}, and
-\ref{tab:sweep-inc-reward} show that the misread-aware filter tracks matched
-Bayes at $L=40$ with state labels, and Table~\ref{tab:sweep-inc-long} shows
-that exact cyclic transitions support exact tracking at $L=160$ from
-terminal labels or reward on clean inputs.
+The misread-aware filter tracks matched Bayes at $L=40$ under dense
+supervision (Table~\ref{tab:sweep-inc-dense}).
 
 \begin{table}[H]
 \centering\small
@@ -92,6 +83,9 @@ Matched Bayes & \sweepcell{0.000}{0.000}{1.000} & \sweepcell{0.664}{0.035}{0.820
 \end{tabular}
 \end{table}
 
+Table~\ref{tab:sweep-inc-terminal} shows the same pattern with terminal
+labels.
+
 \begin{table}[H]
 \centering\small
 \caption{Increments regime at $L=40$ with terminal state labels.
@@ -122,6 +116,8 @@ Matched Bayes & \sweepcell{0.000}{0.000}{1.000} & \sweepcell{0.664}{0.035}{0.820
 \end{tabular}
 \end{table}
 
+Table~\ref{tab:sweep-inc-reward} reports the comparison with terminal reward.
+
 \begin{table}[H]
 \centering\small
 \caption{Increments regime at $L=40$ with terminal reward.
@@ -151,6 +147,9 @@ Matched Bayes & \sweepcell{0.000}{0.000}{1.000} & \sweepcell{0.664}{0.035}{0.820
 \bottomrule
 \end{tabular}
 \end{table}
+
+On clean inputs, exact cyclic transitions support exact tracking at
+$L=160$ from terminal labels or reward (Table~\ref{tab:sweep-inc-long}).
 
 \begin{table}[H]
 \centering\small
@@ -185,10 +184,9 @@ Matched Bayes & \sweepcell{0.000}{0.000}{1.000} & \sweepcell{0.000}{0.000}{1.000
 \FloatBarrier
 
 \subsection{Missing regime}
-Tables~\ref{tab:sweep-missing-dense}, \ref{tab:sweep-missing-terminal}, and
-\ref{tab:sweep-missing-reward} show that modeling misreads and correcting with
-pointer readings brings the filter's NLL close to matched Bayes with state
-labels and gives the lowest learned NLL across misread rates with reward.
+Modeling misreads and correcting with pointer readings brings the
+filter's NLL close to matched Bayes under dense supervision
+(Table~\ref{tab:sweep-missing-dense}).
 
 At $r=0.3$ and $L=160$, both the misread-aware filter and matched Bayes
 reach $1.263$ NLL with dense and terminal labels. The token-constrained filter
@@ -227,6 +225,9 @@ Matched Bayes & \sweepcell{0.834}{0.032}{0.685} & \sweepcell{1.045}{0.022}{0.583
 \end{tabular}
 \end{table}
 
+Table~\ref{tab:sweep-missing-terminal} shows the same pattern with terminal
+labels.
+
 \begin{table}[H]
 \centering\small
 \caption{Missing regime at $L=160$ with terminal state labels.
@@ -256,6 +257,9 @@ Matched Bayes & \sweepcell{0.834}{0.032}{0.685} & \sweepcell{1.045}{0.022}{0.583
 \bottomrule
 \end{tabular}
 \end{table}
+
+With terminal reward, the misread-aware filter gives the lowest learned
+NLL across misread rates (Table~\ref{tab:sweep-missing-reward}).
 
 \begin{table}[H]
 \centering\small

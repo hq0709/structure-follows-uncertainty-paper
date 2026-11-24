@@ -20,10 +20,8 @@ The fixed-length Transformer uses positional encoding and a learning rate
 of $0.001$. It trains for $20.48$ million environment steps, compared with
 $7.68$ million for the other models. The cue and monotone results confirm
 that the GRU and LSTM learn these simpler memory tasks.
-Table~\ref{tab:main} reports fixed-length success, median crossing steps,
-and seed counts under the common budget.
-
-\input{tables/tab_main}
+Table~\ref{tab:main} in Section~\ref{sec:rl} reports fixed-length success,
+median crossing steps, and seed counts under the common budget.
 \FloatBarrier
 
 The clean sequence control and the noisy feature experiments in
@@ -40,8 +38,7 @@ training with terminal reward on lengths 4 through 14. Phase rotation
 extrapolates best on the smaller cycles, and the LSTM is more accurate at
 length 40 for $k=4,5$. The decoding margin in
 Lemma~\ref{lem:margin} quantifies how tightly the ideal scores are spaced as
-$k$ increases. The clean sequence control below tests exact angles
-(Table~\ref{tab:newseq5}).
+$k$ increases. The clean sequence control below tests exact angles.
 
 \input{tables/tab_kscaling}
 
