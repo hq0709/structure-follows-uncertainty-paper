@@ -5,16 +5,17 @@
 \newcommand{\bl}[1]{{\color{black!55}\scriptsize\,#1}}
 \newcommand{\rc}[1]{\cellcolor{sumRot}\textbf{#1}}
 \newcommand{\fc}[1]{\cellcolor{sumFil}\textbf{#1}}
-\begin{table}[H]
+\begin{table}[!t]
 \centering\small
 \caption{Summary of all experiments. Learned entries are five-seed means.
 Red marks a structured transition, and green marks a structured belief update.
 \emph{Unstructured} gives the best GRU, LSTM, or Transformer in grey.
-Phase rotation uses the best tested angle variant, and the drift row includes
-the rest-gated bias state ($20.2^\circ$ without it). The cyclic filter column
-uses the learned cyclic counter for noisy features. Dashes mark untested
-models. Sections~\ref{sec:exp} and~\ref{sec:imu} give protocols and point to
-tables with SDs and intervals.}
+Phase rotation uses the best tested angle variant, including learned angles for
+magnetic disturbance. The drift row includes the rest-gated bias state
+($20.2^\circ$ without it). The cyclic filter column uses the learned cyclic
+counter for noisy features and the measured-shift filter for gyroscope heading
+and drift. Dashes mark untested models. Sections~\ref{sec:exp} and~\ref{sec:imu}
+give protocols and point to tables with SDs and intervals.}
 \label{tab:summary}
 \setlength{\tabcolsep}{2.45pt}
 \renewcommand{\arraystretch}{1.12}
@@ -26,7 +27,7 @@ Uncertainty & Experiment & Metric & Unstructured & Phase rotation & Cyclic filte
  & $\Z_3$ counting from reward, $L{=}10$ & success $\uparrow$ & .975\bl{TF} & \rc{.997} & --- & --- \\
  & Valve control, $N{=}32$ ($4\times$ training) & success $\uparrow$ & .801\bl{LSTM} & \rc{.997} & --- & --- \\
  & Clean tokens, final label, $L{=}160$ & accuracy $\uparrow$ & .244\bl{GRU} & \rc{1.000} & \textbf{1.000} & 1.000 \\
- & IMU heading, 240\,s & error$^\circ$ $\downarrow$ & 73.7\bl{TF} & \rc{29.6} & --- & --- \\
+ & IMU heading, 240\,s & error$^\circ$ $\downarrow$ & 73.7\bl{TF} & \rc{29.6} & 30.2 & --- \\
 \midrule
 \multirow{5}{*}{\shortstack[l]{\color{sumFilT}\textbf{Increment}\\\color{sumFilT}\textbf{uncertain}}}
  & Token misreads $r{=}0.01$, $L{=}40$ & NLL $\downarrow$ & 1.386\bl{LSTM} & 1.161 & \fc{0.966} & 0.965 \\
@@ -36,8 +37,8 @@ Uncertainty & Experiment & Metric & Unstructured & Phase rotation & Cyclic filte
  & Gait phase, 3\,s dropouts & RMSE (\%) $\downarrow$ & 12.33\bl{LSTM} & 28.86 & \fc{9.04} & --- \\
 \midrule
 \multirow{2}{*}{\shortstack[l]{\color{sumBiaT}\textbf{Drift or}\\\color{sumBiaT}\textbf{disturbance}}}
- & Gyroscope drift, 120\,s & error$^\circ$ $\downarrow$ & 47.9\bl{TF} & \rc{12.8} & --- & --- \\
- & Magnetic disturbance, 60\,s & error$^\circ$ $\downarrow$ & 10.9\bl{LSTM} & --- & \fc{9.5} & --- \\
+ & Gyroscope drift, 120\,s & error$^\circ$ $\downarrow$ & 47.9\bl{TF} & \rc{12.8} & 21.6 & --- \\
+ & Magnetic disturbance, 60\,s & error$^\circ$ $\downarrow$ & 10.9\bl{LSTM} & 46.5 & \fc{9.5} & --- \\
 \midrule
 \multirow{2}{*}{\shortstack[l]{\textbf{Decisions}}}
  & Shared planner, default setting & utility (pts) $\uparrow$ & 62.3\bl{GRU} & 62.3 & \fc{63.0} & 63.3 \\

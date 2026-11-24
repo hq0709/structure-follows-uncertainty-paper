@@ -34,10 +34,16 @@ standardized features. Phase rotation with measured angle uses $16$ complex
 channels with angles $n\,u_t$ for $n=1,\dots,8$, two channels per harmonic, a
 learned initial phase, and a squared-amplitude readout over 16 sectors. Its
 readout and initial phase have 528 parameters. The encoder receives no gradient
-in this variant. Phase rotation with learned angle sets the angles to a linear
-function of the encoder output initialized at the harmonic solution (2{,}480
-parameters). Phase rotation with learned correction adds a scalar correction to
-$u_t$ (1{,}969 parameters). The measured-angle rotation with a bias state uses
+in this variant. The Task~A cyclic filter has 1{,}441 trainable parameters and
+maintains a categorical belief on a 128-bin grid, initialized as a point mass
+at zero. Each step shifts the belief by the measured increment $u_t$ through a
+phase rotation of its Fourier coefficients and applies Gaussian diffusion with
+an input-dependent width from the encoder. The filter uses only this prediction
+step and pools the belief into 16 sectors. Phase rotation with learned angle
+sets the angles to a linear function of the encoder output initialized at the
+harmonic solution (2{,}480 parameters). Phase rotation with learned correction
+adds a scalar correction to $u_t$ (1{,}969 parameters). The measured-angle
+rotation with a bias state uses
 $\theta_t=n(u_t-b_t)$ and $b_t=(1-g_t)b_{t-1}+g_tu_t$, with $b_0=0$ in each
 window. The physical rest detector sets $g_t=1/28.6$ during rest and zero
 otherwise. Rest requires the gyroscope norm to stay below $2^\circ$/s and the
@@ -49,12 +55,19 @@ $\delta_t$ a scalar linear readout from a width-14 GRU on the encoded inputs.
 It uses the same squared-amplitude readout over sectors and has 3{,}967
 trainable parameters. The standard GRU (hidden size
 14), LSTM (12), and one-layer causal Transformer (width 16, four heads) have
-3{,}664, 3{,}824, and 4{,}432 parameters. In Task~B the cyclic filter has 1{,}635
-parameters and the GRU, LSTM, and Transformer have 7{,}312, 7{,}200, and 5{,}376.
+3{,}664, 3{,}824, and 4{,}432 parameters. In Task~B the cyclic filter and the
+learned-angle rotation have 1{,}635 and 4{,}144 parameters, and the GRU, LSTM,
+and Transformer have 7{,}312, 7{,}200, and 5{,}376. The Task~B rotation uses
+learned angles $\theta_t=g\,u_t+c_t$, with $c_t$ from the encoder on the
+Task~B inputs, including the magnetometer features. It learns the initial
+phase and uses a squared-amplitude readout over 64 sectors. The learned-correction
+variant $\theta_t=n(u_t+c_t)$ has 3{,}633 parameters and gives a validation NLL
+of $2.151$, compared with $2.117$ for the selected rotation.
 All models train with per-step NLL on 10~s windows, Adam, batch size 32, and
 gradient clipping at norm 1, for 6{,}000 updates in Task~A and 4{,}000 in
 Task~B. The learning rate is chosen from $\{10^{-3},3\times10^{-3}\}$ by
-validation NLL. Each setting uses five seeds.
+validation NLL. The selected rates are $3\times10^{-3}$ for the Task~A cyclic
+filter and $10^{-3}$ for the Task~B rotation. Each setting uses five seeds.
 
 \paragraph{Evaluation.}
 Test windows start every 5~s. Their number is 739, 665, 558, 343, and 95 for
@@ -65,7 +78,9 @@ trials 10{,}000 times. VQF \citep{laidig2023vqf} runs offline on the raw 285.7~H
 data of each window, in its 6D form for Task~A and its 9D form for Task~B.
 Table~\ref{tab:imu-a} gives the heading error and NLL for Task~A, and
 Table~\ref{tab:imu-contrast} gives paired comparisons for the measured-angle
-rotation. Table~\ref{tab:imu-b} gives the Task~B results by disturbance status.
+rotation. In the order of window lengths above, the Task~A cyclic filter gives
+window-end NLLs of $0.50$, $0.81$, $1.13$, $1.64$, and $2.20$~nats.
+Table~\ref{tab:imu-b} gives the Task~B results by disturbance status.
 
 \paragraph{Amendments.}
 We fixed the original protocol before training. The first round used raw
@@ -79,7 +94,8 @@ physical rest detector. We also added the GRU on the integrated increment as
 a same-prior baseline after the original protocol. We specified Task~B before
 training and reran all Task~B models after correcting the order of two feature
 columns. The original protocol specified two Transformer layers. The reported
-runs use one.
+runs use one. After the original protocol, we added the Task~A cyclic filter
+with measured shift and the Task~B phase rotation with learned angles.
 
 \begin{table}[H]
 \centering\small
@@ -97,6 +113,7 @@ Window length (s) & 10 & 30 & 60 & 120 & 240 && 10 & 30 & 60 & 120 & 240 \\
 \midrule
 \multicolumn{12}{@{}l}{\emph{NLL over valid steps}} \\
 Phase rotation with measured angle & 4.8 & 7.7 & 11.6 & 20.2 & 29.6 && 0.38 & 0.54 & 0.75 & 1.30 & 1.58 \\
+Cyclic filter (measured shift) & 4.5 & 7.2 & 12.5 & 21.6 & 30.2 && 0.43 & 0.60 & 0.77 & 1.03 & 1.45 \\
 Phase rotation with learned angle & 4.9 & 8.5 & 22.7 & 99.7 & 87.4 && 0.34 & 0.59 & 0.97 & 1.77 & 2.51 \\
 Phase rotation with learned correction & 7.7 & 26.5 & 53.7 & 97.5 & 93.5 && 0.53 & 1.43 & 2.40 & 3.34 & 4.28 \\
 GRU & 25.4 & 45.8 & 58.1 & 60.1 & 75.2 && 1.07 & 1.92 & 2.39 & 2.63 & 3.63 \\
@@ -153,6 +170,7 @@ Classical filters give point estimates.}
 Window length (s) & 10 & 30 & 60 & 120 && 10 & 30 & 60 & 120 && Dist. & Undist. \\
 \midrule
 Cyclic filter & 9.0 & 8.9 & 9.5 & 8.9 && 5.9 & 6.0 & 6.1 & 6.1 && 2.64 & 2.57 \\
+Phase rotation (learned angle) & 31.3 & 39.6 & 46.5 & 45.1 && 18.6 & 23.7 & 29.8 & 33.6 && 3.85 & 3.25 \\
 GRU & 9.9 & 11.0 & 12.6 & 11.5 && 5.5 & 5.9 & 6.2 & 6.2 && 2.67 & 1.99 \\
 LSTM & 8.8 & 9.7 & 10.9 & 10.2 && 5.6 & 6.1 & 6.4 & 6.4 && 2.46 & 1.86 \\
 Transformer & 9.2 & 11.9 & 15.8 & 18.0 && 5.0 & 6.7 & 8.7 & 10.9 && 3.20 & 3.40 \\

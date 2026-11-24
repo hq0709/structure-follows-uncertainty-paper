@@ -68,8 +68,14 @@ consistent with the angular-error bound in Section~\ref{sec:stab}. Phase
 rotation with measured angle stays within $1.4^\circ$ of integrating $u_t$
 directly and supplies sector probabilities. A GRU on the integrated increment
 learns a residual correction to the accumulated angle and reaches $27.4^\circ$
-at 240~s with the same readout. The two models show that placing the integration
-prior in the transition supports extrapolation across architectures.
+at 240~s with the same readout. The cyclic filter shifts its belief by the
+measured increment and learns only its spread, reaching $30.2^\circ$ at 240~s,
+close to measured-angle rotation ($29.6^\circ$) and well below the best standard
+network ($73.7^\circ$). It gives the lowest reported window-averaged NLL among
+learned models at 120 and 240~s ($1.03$ and $1.45$, compared with $1.30$ and
+$1.58$ for measured-angle rotation). Rotating a state or shifting a belief by
+the measured increment puts integration in the cyclic transition and supports
+extrapolation across architectures.
 
 The gyroscope's residual drift motivates a bias state in that transition.
 The rotation subtracts an estimate of the bias from each measured increment.
@@ -97,10 +103,14 @@ learned pointer likelihood. Its tracking error matches that of the best neural
 network on disturbed trials at 60~s, with a paired difference of $-1.4^\circ$
 from the LSTM and an interval of $[-3.4,0.6]$. On undisturbed trials it improves
 on the tuned complementary filter by $1.2^\circ$ (paired interval
-$[-2.1,-0.3]$). Table~\ref{tab:imu-b} reports both groups. In this task magnetic
-disturbance enters through the pointer model. VQF's magnetic disturbance
-rejection puts structure in that model by screening readings before they
-correct the heading.
+$[-2.1,-0.3]$). Table~\ref{tab:imu-b} reports both groups. With the same
+magnetometer features, the learned-angle phase rotation reaches $46.5^\circ$
+on disturbed trials at 60~s, compared with $9.5^\circ$ for the cyclic filter.
+This rotation only advances its state, so incorporating the pointer reading as
+heading evidence calls for a likelihood correction to the predicted belief.
+In this task magnetic disturbance enters through the pointer model. VQF's
+magnetic disturbance rejection puts structure in that model by screening
+readings before they correct the heading.
 
 \subsection{Unobserved increments: gait phase from a shank IMU}
 \label{sec:gait}
