@@ -1,13 +1,13 @@
-\section{Heading from a Recorded Inertial Sensor}
+\section{Recorded Inertial Sensors}
 \label{sec:imu}
 
-The heading of a moving sensor is a cyclic state with a continuous position. A
-gyroscope measures a heading increment, and a magnetometer supplies a pointer
-reading susceptible to magnetic disturbance. We test both sources on BROAD,
-a public benchmark of 39 trials recorded with an inertial measurement unit
-(IMU) and optical motion capture \citep{laidig2021broad}. The motion capture
-supplies the labels. Figure~\ref{fig:imu} shows the gyroscope task and its main
-comparisons. Appendix~\ref{app:imu} documents the protocol and amendments.
+We test cyclic estimation on two recorded inertial datasets. On BROAD, a
+gyroscope measures the heading increment, a magnetometer supplies a pointer
+reading, and optical motion capture supplies heading labels \citep{laidig2021broad}.
+On the Camargo dataset, a shank inertial measurement unit (IMU) supplies a
+gait phase pointer, and the phase increment depends on unobserved cadence
+\citep{camargo2021dataset}. Figure~\ref{fig:imu} shows the gyroscope task and its
+main comparisons. Appendix~\ref{app:imu} documents the BROAD protocol and amendments.
 
 \begin{figure}[!t]
 \centering
@@ -94,3 +94,46 @@ $[-2.1,-0.3]$). Table~\ref{tab:imu-b} reports both groups. In this task magnetic
 disturbance enters through the pointer model. VQF's magnetic disturbance
 rejection puts structure in that model by screening readings before they
 correct the heading.
+
+\subsection{Unobserved increments: gait phase from a shank IMU}
+\label{sec:gait}
+We estimate cyclic gait phase online at every step. An unknown, changing
+cadence sets the phase increment, and the shank waveform acts as a pointer
+reading of phase. The Camargo dataset contains 3,147 trials from 22 adults
+across treadmill, level-ground, ramp, and stair walking. We train on 13
+subjects, select learning rates on three, and test on six.
+
+The cyclic filter maintains a joint belief over phase and cadence. It shifts
+each phase distribution by its cadence, updates cadence with a random walk,
+and mixes in a uniform floor. A learned pointer likelihood corrects the
+joint belief on received packets. A missing packet skips the correction.
+We compare with a learned-angle phase rotation, a GRU, an LSTM, a causal
+temporal CNN from the published estimator family \citep{kang2021gait}, and a
+time-based estimator. Test bursts of missing packets recur every 4~s.
+The 2~s and 3~s bursts exceed the longest dropout seen in training.
+
+Table~\ref{tab:gait} reports phase RMSE as a percentage of the gait cycle.
+The learned-angle rotation puts cyclic structure in the transition by
+accumulating inferred angles and stays at chance ($28.86\%$). The cyclic
+filter uses the same pointer to correct its predicted phase belief and tracks
+the gait cycle. On clean data the filter, LSTM,
+GRU, and temporal CNN span $1.84$--$2.04\%$. With 1~s bursts the filter, LSTM,
+and GRU span $2.82$--$2.99\%$. Both ranges are within $0.2$ percentage points.
+
+During longer dropouts the filter keeps advancing the phase at its believed
+cadence. With 3~s bursts it reaches $9.04\%$ RMSE, $27\%$ below the LSTM's
+$12.33\%$. The paired subject-bootstrap difference is $-3.13$ points
+(95\% interval $[-3.99,-2.30]$), with lower error for all six test subjects.
+At 2~s, RMSE is $5.41\%$ versus $5.94\%$ for the LSTM (paired interval
+$[-0.99,-0.16]$ points), with lower error for five of six subjects. The filter
+recovers faster after a 3~s burst, with $4.83\%$ RMSE in the following second
+versus $6.88\%$ for the LSTM. It uses about half the LSTM's parameters
+(21,090 versus 42,994). At 3~s, the temporal CNN reaches $18.98\%$ with a finite
+input history, and the time-based estimator reaches $24.35\%$ by extrapolating
+from the previous stride duration.
+
+\input{tables/tab_gait}
+
+The best extrapolation in these tests comes from using the measured increment
+in the cyclic transition on BROAD and inferring the unobserved increment in
+the cyclic belief update on Camargo.

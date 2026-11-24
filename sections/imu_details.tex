@@ -164,3 +164,124 @@ $[-3.4,0.6]$ against the LSTM and $-2.6^\circ$ $[-6.5,1.3]$ against the tuned
 rejection filter. On undisturbed trials the cyclic filter improves on both
 complementary filters by $1.2$--$1.4^\circ$, with intervals excluding zero,
 and matches the GRU's error.
+
+\FloatBarrier
+\section{Gait Phase Protocol and Results}
+\label{app:gait}
+
+\paragraph{Data and labels.}
+The Camargo dataset \citep{camargo2021dataset} contains about 20~h of
+recordings from 22 able-bodied adults, available under CC BY 4.0. The 3,147
+trials cover treadmill walking (157 trials at 28 speeds, median duration
+144~s), level-ground walking (680 trials), ramps (1,394 trials at six
+inclines), and stairs (916 trials at four step heights). The dataset's
+\texttt{gcRight} heel-strike phase label runs from 0 to $100\%$ of the gait
+cycle. We sample it on the 50~Hz grid and assign it to one of $K=50$ bins,
+each spanning $2\%$ of the cycle. Valid steps lie between the first and last
+heel strikes of a trial and within strides shorter than 2.5~s. The labels
+serve only as training targets and evaluation references.
+
+\paragraph{Subject split.}
+Training uses 13 subjects (AB06--AB18). Validation uses AB19, AB20, and AB21
+solely to select the learning rate. The six test subjects are AB23, AB24,
+AB25, AB27, AB28, and AB30.
+
+\paragraph{Inputs and encoder.}
+We use the three-axis accelerometer and three-axis gyroscope of the right-shank
+IMU. We average blocks of four raw samples at 200~Hz to produce inputs at
+50~Hz. Step $t$ is available at raw sample $4t+3$. We standardize the six IMU
+channels with the training-subject means and SDs and append a missing-packet
+flag. The learned models share a two-layer MLP with 64 units per layer and
+tanh activations. At each step it encodes the last five steps (0.1~s) of all
+seven input channels.
+
+\paragraph{Models.}
+The cyclic filter (21,090 parameters) maintains a categorical belief on an
+internal grid of 200 phase bins and 25 cadence values spanning stride periods
+from 0.67 to 3.3~s. Prediction shifts each cadence slice by its phase increment,
+using linear interpolation for the fractional shift, and applies a learned
+nearest-neighbor random walk in cadence. It mixes in a uniform floor with
+weight $10^{-2}$ as standard re-initialization against filter divergence.
+On received packets the filter multiplies by the learned pointer likelihood
+over phase and cadence from the encoder and normalizes the result. On missing
+packets it uses the predicted belief directly. The readout pools the phase
+belief into 50 bins.
+
+The phase rotation (11,776 parameters) predicts its angle from the encoder
+and uses a squared-amplitude readout. The GRU (34,674 parameters) and LSTM
+(42,994 parameters) both use hidden size 64 and a softmax readout. The causal
+temporal CNN (37,634 parameters) uses dilations from 1 to 16 and a 1.26~s
+receptive field. The time-based estimator detects events
+from the shank sagittal gyroscope. It arms above a threshold, registers an
+event at the next downward zero crossing, and applies a refractory period.
+Its phase is the fitted offset plus elapsed time divided by the previous
+stride duration. The threshold and offset are fitted on training subjects.
+The estimator continues advancing by elapsed time through a dropout.
+
+\paragraph{Training and dropouts.}
+All learned models minimize per-step NLL over 50 bins on 4~s windows
+(200 steps). They use Adam with a cosine schedule, 4,000 updates, and batch
+size 64. Validation NLL selects the learning rate from
+$\{10^{-3},3\times10^{-3}\}$. The filter, LSTM, and GRU select $10^{-3}$, and
+the temporal CNN and phase rotation select $3\times10^{-3}$. We run five
+seeds (0--4). The models share the training dropout protocol. With probability
+$0.5$, a window has one to three bursts lasting 0.1--1.0~s. During a burst we
+zero the IMU channels and set the missing-packet flag.
+
+\paragraph{Evaluation.}
+Test windows span 20~s (1,000 steps) with a stride of 10~s and cover all four
+locomotion modes. The dropout tests insert one burst every 4~s with duration
+0.2, 0.5, 1, 2, or 3~s. We also evaluate each full treadmill trial as a single
+sequence. Metrics use valid steps after a 2~s warm-up. For a predicted phase
+distribution we take its circular mean as the phase estimate. We compute RMSE
+from circular phase errors in percent of the gait cycle, including RMSE during
+bursts and in the 1~s after a burst ends. Uniform guessing gives $28.87\%$
+RMSE. Per-step NLL is in nats over 50 bins, with uniform NLL $\log 50=3.91$.
+For the time-based estimator, a wrapped normal fitted on training subjects
+provides the likelihood for the clean NLL.
+
+Table~\ref{tab:gait-full} reports the full phase RMSE results, burst and
+recovery RMSE, and per-step NLL. We pair seed-averaged subject RMSE for the
+filter and the LSTM and bootstrap the six test subjects with 10,000 resamples.
+The filter-minus-LSTM differences and 95\% intervals, in percentage points,
+are $+0.18$ $[0.01,0.31]$ on clean data, $+0.07$ $[-0.30,0.34]$ at 1~s,
+$-0.54$ $[-0.99,-0.16]$ at 2~s, and $-3.13$ $[-3.99,-2.30]$ at 3~s.
+The filter gives lower RMSE on five of six subjects at 2~s and all six at 3~s.
+
+\begin{table}[!htbp]
+\centering\small
+\caption{Gait phase RMSE (\% of cycle) and per-step NLL (nats) on six test
+subjects. Entries give five-seed means with reported SDs. Recovery
+is the first second after a burst. Dashes mark unreported entries.}
+\label{tab:gait-full}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+Condition & Cyclic filter & LSTM & GRU & Temporal CNN &
+\shortstack[r]{Phase rotation\\(learned angle)} & \shortstack[r]{Time-based\\estimator} \\
+\midrule
+\multicolumn{7}{@{}l}{\emph{Overall RMSE}} \\
+Clean & $2.04\pm0.03$ & $1.84\pm0.02$ & $1.88\pm0.04$ & $2.02\pm0.04$ & $28.86\pm0.02$ & 8.25 \\
+0.2~s & $2.11\pm0.02$ & $1.93\pm0.02$ & $1.99\pm0.03$ & $2.12\pm0.04$ & 28.86 & 8.83 \\
+0.5~s & $2.33\pm0.01$ & $2.18\pm0.01$ & $2.23\pm0.03$ & $2.43\pm0.04$ & 28.86 & 13.72 \\
+1~s & $2.91\pm0.03$ & $2.82\pm0.03$ & $2.99\pm0.07$ & $3.69\pm0.07$ & 28.86 & 21.49 \\
+2~s & $5.41\pm0.14$ & $5.94\pm0.17$ & $6.89\pm0.38$ & $13.14\pm0.02$ & 28.86 & 21.53 \\
+3~s & $9.04\pm0.17$ & $12.33\pm0.59$ & $13.47\pm0.55$ & $18.98\pm0.02$ & 28.86 & 24.35 \\
+Full treadmill trials & $1.76\pm0.04$ & $1.66\pm0.01$ & $1.70\pm0.04$ & $1.80\pm0.04$ & 28.88 & 7.45 \\
+\midrule
+\multicolumn{7}{@{}l}{\emph{Burst and recovery RMSE}} \\
+1~s, during & $4.39\pm0.09$ & $4.29\pm0.10$ & $4.61\pm0.17$ & $6.00\pm0.09$ & --- & 21.48 \\
+1~s, after & $2.91\pm0.05$ & $2.88\pm0.07$ & $3.10\pm0.07$ & $3.81\pm0.17$ & --- & 24.11 \\
+2~s, during & $7.40\pm0.21$ & $7.98\pm0.24$ & $9.19\pm0.57$ & $19.27\pm0.03$ & --- & 25.40 \\
+2~s, after & $3.91\pm0.09$ & $5.03\pm0.28$ & $6.12\pm0.36$ & $4.95\pm0.20$ & --- & 22.02 \\
+3~s, during & $10.64\pm0.21$ & $14.49\pm0.75$ & $15.87\pm0.70$ & $22.97\pm0.03$ & --- & 26.67 \\
+3~s, after & $4.83\pm0.11$ & $6.88\pm0.36$ & $7.27\pm0.46$ & $5.01\pm0.23$ & --- & 21.05 \\
+\midrule
+\multicolumn{7}{@{}l}{\emph{Per-step NLL}} \\
+Clean & $1.26\pm0.01$ & 1.20 & 1.22 & 1.21 & 4.08 & 2.98 \\
+1~s & 1.51 & 1.46 & 1.49 & 1.52 & 4.08 & --- \\
+2~s & 1.99 & 1.94 & 2.01 & 2.12 & 4.08 & --- \\
+3~s & 2.58 & 2.59 & 2.67 & 2.73 & 4.08 & --- \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -10,16 +10,21 @@ in NLL. The shared planner converts the more accurate beliefs into higher
 utility, with the choice to take a pointer reading most responsive to the
 belief.
 
-On the recorded sensor, the measured increment also supplies the transition
+On BROAD, the measured increment also supplies the transition
 for two different architectures. Gyroscope drift leaves an additional source
 of error, and the bias state estimates it from intervals of physical rest.
 Magnetic disturbance affects the pointer reading. VQF's disturbance rejection
 illustrates how structure in the pointer model determines the influence of
 those readings on the heading estimate.
 
+In gait, tailoring the belief update to the unobserved cadence lets the shank
+waveform correct both phase and cadence. During dropouts the filter propagates
+phase using its cadence distribution. This update gives the lowest phase error
+on bursts longer than the training dropouts.
+
 \paragraph{Scope.}
 The cycle size is known. The simulated valve uses symbolic cues and scripted
-poses. The recorded-sensor tasks use the BROAD dataset.
+poses. The recorded-sensor tasks use BROAD for heading and Camargo for gait phase.
 
 \section{Conclusion}\label{sec:conclusion}
 
@@ -30,3 +35,5 @@ increments. A shared planner turns the resulting beliefs into better sensing
 decisions. On a recorded IMU, measured increments support heading
 extrapolation in both phase rotation and a GRU, and a bias state informed by
 physical rest further improves heading estimates.
+For gait phase, a joint belief over phase and cadence gives the lowest error
+during sensor dropouts beyond the training range.

@@ -29,9 +29,11 @@ Our thesis is that a known cyclic structure helps a learned estimator when it is
 placed at the source of uncertainty. A reliable increment can set the rotation
 angle directly in the transition. An uncertain increment calls for a
 distribution over shifts in the belief update, followed by correction from a
-pointer likelihood. For an inertial sensor the measured increment sets the
-transition, and the residual uncertainty from gyroscope drift enters through a
-bias state. Magnetic disturbance instead enters through the pointer model.
+pointer likelihood. For inertial heading, the measured increment sets the
+transition, and residual uncertainty from gyroscope drift enters through a
+bias state. Magnetic disturbance enters through the pointer model. In gait,
+unobserved cadence sets the phase increment, and the shank waveform supplies
+a pointer reading to correct a joint belief over phase and cadence.
 
 \begin{enumerate}
 \item \textbf{A controlled protocol for cyclic structure.}
@@ -57,7 +59,7 @@ filters retain at least $95\%$ of the attainable gain in settings with at least
 ten points of headroom.
 The effect concentrates in the decision to take a reading
 (Section~\ref{sec:regimes}).
-\item \textbf{Measured increments and bias on a recorded IMU.}
+\item \textbf{Inertial tracking with measured and unobserved increments.}
 From 10~s training windows, phase rotation with measured angle reaches
 $29.6^\circ$ error at 240~s, compared with $73.7^\circ$ for the best standard
 recurrent or attention model. A GRU given the integrated increment reaches
@@ -65,4 +67,8 @@ $27.4^\circ$, confirming the value of the integration prior across architectures
 A bias state driven by a physical rest detector reduces the rotation's
 120~s error by about $37\%$, from $20.2^\circ$ to $12.8^\circ$, and its window-end NLL
 from $2.53$ to $1.52$ (Section~\ref{sec:imu}).
+For gait phase, the learned-angle rotation stays at chance ($28.86\%$ RMSE).
+The filter's joint belief over phase and cadence lowers RMSE by $27\%$
+relative to the LSTM under 3~s dropouts, from $12.33\%$ to $9.04\%$
+(Section~\ref{sec:gait}).
 \end{enumerate}
