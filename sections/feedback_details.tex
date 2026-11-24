@@ -5,6 +5,23 @@ after missing turns. Section~\ref{sec:regimes} shows how cyclic beliefs
 improve sensing decisions under a shared planner.
 
 \subsection{Estimation and control protocol}
+The four-position valve starts from a uniformly drawn position shown by an
+exact initial pointer. Each step moves the valve by $-1$, $0$, or $+1$ with
+nominal probabilities $(0.25,0.50,0.25)$. The missing-token schedule starts
+at a random offset in each episode. The pointer reports the true state
+with probability $\rho=0.8$ and otherwise draws a uniform token. The filter
+uses $\ell(y\mid s)=\rho\,\mathbf{1}\{s=y\}+(1-\rho)/4$ with a learned
+reliability. Both filters learn the event encoder. The GRU and phase
+rotation share the filters' observation channels, encoder width, and
+training budget.
+
+Nominal Bayes uses the training parameters, and matched Bayes uses the test
+parameters. Both compute the posterior from the same observation histories
+as the learned models. The tests vary the run of missing turns and the period
+between readings, change the turn probabilities to $(0.40,0.20,0.40)$ or
+the pointer reliability to $\rho=0.6$, and include a clean case with all
+turns visible and only the initial pointer.
+
 \myparagraph{Token constraint and remaining uncertainty.} Adding the token constraint changes NLL by $-0.00095$ nats (descriptive 95\%
 seed-bootstrap interval $[-0.00189,-0.00016]$) and net utility by $+0.098$ points
 ($[-0.048,0.246]$). The constrained filter comes within $0.0168$ nats of
@@ -46,6 +63,14 @@ For NLL and KL, predicted probabilities are floored at $10^{-8}$.
 The seed-bootstrap intervals in the main text are descriptive percentile
 intervals over 10,000 resampled sets of five paired seeds.
 
+The planner receives a uniformly drawn target after each tracking history.
+In the default setting it has at most three actions, turn success of $0.8$
+without confirmation, and control-time pointer reliability $\rho=0.8$
+independent of the tracking reliability. A turn costs $0.04$, a reading
+costs $0.08$, and utility is reported in points on a scale of 100. The
+simulator and planner are shared, so utility differences come from the
+starting beliefs.
+
 The controller computes its action values by enumerating all later actions
 and every possible sensor reading. For a commanded turn by $j$ positions, the
 planned belief update is $0.8 P_j b + 0.2b$. Sensing updates the belief by the pointer
@@ -55,8 +80,17 @@ We independently verify short-horizon posteriors by summing over latent
 trajectories. We also verify probability normalization, finite gradients,
 causality at a shared prefix and basic planner decisions.
 
+Table~\ref{tab:feedback} compares estimation and default-planner utility
+across the nominal and shifted tests at $L=40$ and $80$.
+
+\input{tables/tab_feedback}
+\FloatBarrier
+
 Figure~\ref{fig:feedback} shows how pointer readings sharpen the belief and
-how the resulting estimates perform under the shared planner.
+how the resulting estimates perform under the shared planner. At length 80
+under the pointer-noise shift, matched Bayes leads to $1.05$ readings per
+episode and the token-constrained filter to $0.68$, for net utilities of
+$59.9$ and $58.6$ points, respectively.
 
 \begin{figure}[H]
 \centering
@@ -87,6 +121,21 @@ Table~\ref{tab:feedback} exactly. A one-step planner never senses, and a cost of
 suppresses sensing at $\rho=0.6$, so the 75 grid points contain 53 distinct regimes.
 Table~\ref{tab:regimes} shows that the cyclic filters retain the largest
 minimum share of attainable utility among learned estimators.
+
+Estimation headroom ranges from $0.3$ to $26$ points. Every learned
+estimator stays within $1.5$ points of matched Bayes, and the
+token-constrained filter stays within $0.66$ points. With at least ten
+points of headroom, every learned estimator retains at least $89.8\%$ of
+the available gain. The largest paired gain of the token-constrained
+filter over the GRU is $1.47$ points.
+
+Cheap, reliable readings make the sensing decision especially sensitive to
+belief quality. An overconfident belief lowers the estimated value of taking
+a reading. With a two-action horizon, a $0.02$ reading cost, and reliability
+$0.95$, the GRU belief leads to $0.64$ readings per episode, compared with $0.84$
+for matched Bayes. The filters retain the value of sensing across the grid,
+including three settings with GRU utility up to $0.92$ percentage points
+below the uniform-belief baseline.
 
 \begin{table}[H]
 \centering\small

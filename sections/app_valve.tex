@@ -20,13 +20,21 @@ The RLBench/CoppeliaSim visualization updates the valve pose with
 compare rendered poses with internal simulator state.
 
 \subsection{Training and evaluation}
-The policies learn from terminal reward on the operate task. In the re-tuned
-comparison (Table~\ref{tab:valve}), every family receives 12{,}000 A2C updates
+The policies learn from terminal reward on the operate task. The re-tuned
+comparison triples the original tuning budget and widens the learning-rate
+grid. Every family receives 12{,}000 A2C updates
 and the learning-rate grid $\{3\times10^{-4},10^{-3},3\times10^{-3},10^{-2}\}$.
 The GRU and LSTM also use widths 16, 32, and 64. Selection uses $N=8$ success
 on tuning seeds 100 and 101. The selected learning rates are evaluated on five
 fresh seeds (0--4), with 4{,}096 balanced greedy episodes per seed and horizon.
-The programmed counter succeeds at every horizon.
+The programmed counter succeeds at every horizon. At $N=128$, sixteen
+times the longest training horizon, phase rotation reaches $0.673$ and the
+best learned baseline reaches $0.684$.
+Table~\ref{tab:valve} reports success and selected learning rates for the
+re-tuned comparison.
+
+\input{tables/tab_valve}
+\FloatBarrier
 
 Table~\ref{tab:valve-original} shows that phase rotation leads both the
 original-budget and fixed-rate comparisons. The original-budget runs use

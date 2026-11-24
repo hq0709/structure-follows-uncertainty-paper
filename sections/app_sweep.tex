@@ -1,18 +1,38 @@
 \section{Full Increment-Uncertainty Sweep}
 \label{app:sweep}
 
-Section~\ref{sec:sweep} gives the shared protocol and shows how exact cyclic
-transitions support learning from sparse signals. The full sweep shows how
-modeling misreads keeps the cyclic filter close to matched Bayes with state
-supervision.
+Section~\ref{sec:sweep} shows how exact cyclic transitions support learning
+from sparse signals. The four-position valve starts from an exact pointer
+and moves by $-1$, $0$, or $+1$ with probabilities $(0.25,0.50,0.25)$.
+With probability $r$, each delivered token is independently replaced with
+one of the other two tokens, chosen uniformly. The increments regime supplies
+all tokens and only the initial pointer. The missing regime erases four
+consecutive tokens in every twelve steps and supplies a noisy pointer every
+twelve steps. That pointer reports the true position with probability $0.8$
+and draws a uniform token otherwise.
 
-In the missing regime, the pointer reports the true position with probability $0.8$ and
-draws a uniform token otherwise. The GRU and LSTM use widths 16 and 13, with
+All learned models train at the test misread rate on lengths $6$, $10$, and
+$14$, with 3{,}000 Adam updates, batch size 96, and gradient clipping at norm 1.
+Each model uses the learning-rate grid $\{10^{-3},3\times 10^{-3},10^{-2}\}$
+and two tuning seeds. Dense supervision uses state NLL at every prefix, and
+terminal supervision uses it at the final step. Reward training uses
+REINFORCE with a sampled final answer, reward $+1$ for a correct answer and
+$-1$ otherwise, and a running-mean baseline. We select the learning rate
+by validation NLL for supervision and validation accuracy for reward.
+
+The GRU and LSTM use widths 16 and 13, with
 1{,}844 and 1{,}812 parameters. The learned-angle and measured-angle rotations
 use 1{,}088 and 1{,}248 parameters, respectively. The cyclic filters use
 196--197 parameters. Matched Bayes uses the simulator probabilities directly.
 The measured-angle rotation uses a learned angle on erased turns and a learned
 input term on steps with an erasure or a pointer reading.
+
+All three cyclic filters mix exact shifts and correct the belief with a
+pointer likelihood. The token-constrained filter treats the reported shift
+as exact on delivered steps, and the unconstrained filter learns shift
+probabilities from the cue. The misread-aware filter combines a global
+learned misread probability with a learned increment prior to infer shift
+probabilities given a token. It uses the prior directly for an erased token.
 
 \newcommand{\sweepcell}[3]{\shortstack{#1 (#2)\\#3}}
 \newcommand{\sweepdetails}{Cells give five-seed means for terminal NLL
@@ -20,6 +40,22 @@ input term on steps with an erasure or a pointer reading.
 episodes per seed and cell.}
 
 \subsection{Increments regime}
+Table~\ref{tab:sweep} compares the clean and $r=0.01$ results at $L=40$
+across training signals.
+
+\input{tables/tab_sweep}
+\FloatBarrier
+
+Both gated models fit the clean count under dense supervision. With a
+terminal label, their NLL and the learned-angle rotation's NLL are
+$1.386$--$1.387$, close to chance NLL of $1.386$ nats. With misreads, the
+token-constrained filter matches Bayes in point accuracy. Its NLL rises
+after misreads change the final residue because the reported shifts assign
+near-zero probability to the true position. The NLL calculation floors
+probabilities at $10^{-8}$. The misread-aware filter matches Bayes accuracy
+at every tested rate under all three signals and reaches $0.972$ NLL at
+$r=0.01$ with terminal reward (Figure~\ref{fig:sweep}b).
+
 Tables~\ref{tab:sweep-inc-dense}, \ref{tab:sweep-inc-terminal}, and
 \ref{tab:sweep-inc-reward} show that the misread-aware filter tracks matched
 Bayes at $L=40$ with state labels, and Table~\ref{tab:sweep-inc-long} shows
@@ -153,6 +189,13 @@ Tables~\ref{tab:sweep-missing-dense}, \ref{tab:sweep-missing-terminal}, and
 \ref{tab:sweep-missing-reward} show that modeling misreads and correcting with
 pointer readings brings the filter's NLL close to matched Bayes with state
 labels and gives the lowest learned NLL across misread rates with reward.
+
+At $r=0.3$ and $L=160$, both the misread-aware filter and matched Bayes
+reach $1.263$ NLL with dense and terminal labels. The token-constrained filter
+gives $1.341$ and $1.333$, respectively. Under terminal reward, the
+misread-aware filter reaches $1.637$ NLL and $0.375$ accuracy. The GRU
+gives $5.081$ NLL and $0.356$ accuracy, and the LSTM gives $3.988$ NLL and
+$0.344$ accuracy.
 
 \begin{table}[H]
 \centering\small

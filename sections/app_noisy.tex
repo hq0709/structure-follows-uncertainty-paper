@@ -19,8 +19,22 @@ compact policy configuration.
 The Gaussian observations have 16 dimensions and noise SD $0.25$.
 The exact-angle variant uses a straight-through quantizer with the original
 injection and readout. The training and evaluation protocol is in
-Appendix~\ref{app:clean-training}. Table~\ref{tab:newseq2} shows that the
-learned cyclic counter sustains high accuracy at long lengths for $k=2,3,4$.
+Appendix~\ref{app:clean-training}.
+Table~\ref{tab:noisy} compares the learned cyclic counter, the width-32 LSTM,
+and both angle-constrained rotations at $L=14$ and $L=160$.
+
+\input{tables/tab_noisy}
+\FloatBarrier
+
+The learned cyclic counter propagates event uncertainty through the count
+belief (Equation~\eqref{eq:filter-predict}). Phase rotation uses a single
+angle per cue, so event errors can accumulate. With the angle penalty,
+accuracy approaches chance by length 40 for $k=2,3$. At $k=4$ and $L=160$,
+enforcing exact multiples of $2\pi/k$ raises rotation accuracy from $0.248$
+to $0.562$. At this length, the width-16 and width-32 LSTMs reach $0.893$
+and $0.933$ on parity, and the small DeltaNet and DeltaProduct adapters reach
+$0.33$--$0.38$ on $\Z_3$. Table~\ref{tab:newseq2} gives all evaluation lengths
+for $k=2,3,4$.
 
 \begin{table}[H]
 \centering\small

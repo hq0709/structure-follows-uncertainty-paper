@@ -17,18 +17,6 @@ with past actions included in the observation history for controlled sequences.
 A learned policy updates a memory $h_t=f_\phi(o_t,h_{t-1})$ and assigns action
 probabilities $\pi_\phi(a\mid h_t)$.
 
-\begin{enumerate}
-\item \textbf{Exactly observed increments.} The observation identifies each
-increment in the clean counting and valve tasks (Section~\ref{sec:rl}).
-\item \textbf{Noisy or missing increments.} Section~\ref{sec:sweep} varies
-token misreads in a controlled protocol. Section~\ref{sec:noisy} uses noisy
-event features, Section~\ref{sec:feedback} erases some tokens, and
-Section~\ref{sec:imu} obtains increments from a gyroscope.
-\item \textbf{Corrupted pointer readings.} The simulated valve pointer can
-report the wrong position (Section~\ref{sec:feedback}), and magnetic
-disturbance can corrupt the magnetometer heading (Section~\ref{sec:imu}).
-\end{enumerate}
-
 We evaluate belief estimates beyond the training lengths using the accuracy of
 the most probable position and the negative log likelihood (NLL) of the true
 position, $-\log b_t(s_t)$. The fixed shared planner selects actions from each

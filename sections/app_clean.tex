@@ -16,6 +16,16 @@ unregularized, unnormalized state update with diagonal rotation. The length
 curriculum uses normalization and the group-angle penalty from
 Section~\ref{sec:stab}.
 
+The fixed-length Transformer uses positional encoding and a learning rate
+of $0.001$. It trains for $20.48$ million environment steps, compared with
+$7.68$ million for the other models. The cue and monotone results confirm
+that the GRU and LSTM learn these simpler memory tasks.
+Table~\ref{tab:main} reports fixed-length success, median crossing steps,
+and seed counts under the common budget.
+
+\input{tables/tab_main}
+\FloatBarrier
+
 The clean sequence control and the noisy feature experiments in
 Appendix~\ref{app:noisy} share a trainer. Each of eight families uses two
 learning rates ($0.001,0.003$) and two tuning seeds (100,101), each with 4,000 updates.
@@ -27,7 +37,8 @@ and training lengths $4,6,8,10,12,14$. Each test uses 1,024 episodes per seed.
 \label{app:kboundary}
 Table~\ref{tab:kscaling} compares greedy accuracy across cycle sizes after
 training with terminal reward on lengths 4 through 14. Phase rotation
-extrapolates best on the smaller cycles. The decoding margin in
+extrapolates best on the smaller cycles, and the LSTM is more accurate at
+length 40 for $k=4,5$. The decoding margin in
 Lemma~\ref{lem:margin} quantifies how tightly the ideal scores are spaced as
 $k$ increases. The clean sequence control below tests exact angles
 (Table~\ref{tab:newseq5}).
@@ -36,6 +47,8 @@ $k$ increases. The clean sequence control below tests exact angles
 
 \subsection{Diagonal complex state-space baseline and readout ablations}
 \label{app:lru}
+\label{sec:ablation}
+\label{sec:priorart}
 Table~\ref{tab:mech} tests phase updates and readouts in a matched parity
 comparison. Table~\ref{tab:lru} compares linear recurrent units (LRUs) on
 length-10 parity over five seeds, using the same width of 16, trainer, and
@@ -49,6 +62,16 @@ controls we set $|\lambda_j|=\gamma_j=1$. The input-conditioned variant in
 Table~\ref{tab:lru} uses the same unit-modulus recurrence and squared-amplitude
 readout with the angle set by the observation. It trains without the
 stabilizers or the length curriculum.
+
+The fixed unit-modulus rotation with a squared-amplitude readout averages
+$0.66$ parity accuracy at length 10. Setting its angle from the input
+raises accuracy to $0.996$ at the same width and training budget, with
+$0.57$ at length 20 without stabilizers. The stabilizers target accumulating
+angular error (Section~\ref{sec:stab}). Phase-advance and readout ablations
+in Table~\ref{tab:mech} link the parity gains to phase carried by the
+transition. The squared-amplitude readout gives the highest accuracy
+among frozen-state probes on clean parity at length 80
+(Appendix~\ref{app:clean-probes}).
 
 For a single fixed linear layer, the state is affine in the input and the
 difference between two quadratic scores has degree at most two. Parity

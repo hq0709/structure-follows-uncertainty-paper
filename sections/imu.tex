@@ -1,145 +1,102 @@
 \section{Recorded Inertial Sensors}
 \label{sec:imu}
 
-We test cyclic estimation on two recorded inertial datasets. On BROAD
-(myon aktos-t at 285.7~Hz), a gyroscope measures the heading increment, a
-magnetometer supplies a pointer reading, and optical motion capture supplies
-heading labels \citep{laidig2021broad}.
-On the Camargo dataset, a shank inertial measurement unit (IMU) supplies a
-gait phase pointer, and the phase increment depends on unobserved cadence
-\citep{camargo2021dataset}. Figure~\ref{fig:imu} shows an example heading trace
-and compares heading error across window lengths.
-Appendix~\ref{app:imu} documents the BROAD protocol and amendments.
+BROAD supplies a measured heading increment from a gyroscope and a heading
+pointer from a magnetometer \citep{laidig2021broad}. The Camargo shank IMU
+supplies a gait phase pointer, with the increment set by unobserved cadence
+\citep{camargo2021dataset}.
+
+\subsection{Observed increments: gyroscope heading}
+\label{sec:imu-gyro}
+Task~A estimates heading change from the start of a window in 16 sectors of
+$22.5^\circ$. The models receive the same inertial inputs, including a
+measured increment, and train on 10~s windows. We test windows from 10 to
+240~s on held-out trials. Measured-angle rotation uses the increment
+directly, and a rest-gated bias state can correct it for gyroscope drift
+(Figure~\ref{fig:imu}).
 
 \begin{figure}[!t]
 \centering
 \includegraphics[width=\linewidth]{figures/imu_main.pdf}
-\caption{(a)~The upper traces compare heading change from the most probable
-sector for measured-angle phase rotation and the GRU (grey) with optical
-truth in a held-out 240~s window from BROAD trial~20 (seed~0).
-The lower traces show a 2~s moving average of error, with mean errors beyond
-10~s of $13^\circ$ for phase rotation and $85^\circ$ for the GRU.
-(b)~Window-end heading error over 10--240~s compares phase rotation with a bias
-state or a measured angle (solid red), phase rotation with a learned angle
-(dashed red), a GRU on the integrated increment (dashed dark grey), the
-standard GRU, LSTM, and Transformer (light grey with distinct markers), and VQF
-(dash-dotted).
-Learned curves average five seeds and then trials, with 18 held-out trials
-through 120~s and the three longest trials at 240~s.
-The dashed vertical line in (a) marks the 10~s training length, and the
-dotted line in (b) marks chance error.}
+\caption{(a)~Window-end heading error over 10--240~s on 18 held-out
+trials compares the GRU, LSTM, and Transformer (light grey),
+learned-angle rotation (dashed light red), the GRU on the integrated
+increment (dashed dark grey), measured-angle rotation (red), rotation
+with a bias state (dark red), and VQF (dash-dotted), with chance marked
+by a dotted line.
+Learned curves average five seeds and then trials, with the three
+longest trials at 240~s.
+(b)~The 120~s window with the highest rest fraction (47\%) on held-out
+trial~05 with breaks shows the 2~s moving average of most-probable-sector
+error for measured-angle rotation without and with the bias state, with
+rest steps from the fixed physical detector shaded grey (seed~0 in
+panels (b--d)).
+(c)~Task~A beliefs for the GRU, measured-angle rotation, and measured-shift
+cyclic filter cover 200--240~s (20--24 times the training length) of the
+held-out 240~s window from trial~20, with darker cells for higher
+probability and a black line for optical heading change.
+(d)~Task~B shows 64-sector beliefs for the LSTM, learned-angle rotation,
+and cyclic filter on disturbed trial~29 (stationary magnet), with dots
+for magnetometer headings, a black line for optical heading, and purple
+bars at the top for deviations above $30^\circ$.
+Among disturbed 120~s windows with at least 10\% flagged steps, we
+select the window minimizing the sum of absolute deviations from the
+LSTM and cyclic filter median tracking errors and show its 15~s span
+with the most flagged steps (30\%).}
 \label{fig:imu}
 \label{fig:imu-sensor}
+\label{fig:imu-qual}
 \end{figure}
 
-\subsection{Observed increments: gyroscope heading}
-\label{sec:imu-gyro}
-The first task is to estimate the heading change since the start of a window,
-binned into 16 sectors of $22.5^\circ$. At 28.6~Hz, every learned model receives
-the same gyroscope and accelerometer readings, gravity direction from a
-causal complementary filter \citep{mahony2008complementary}, and heading
-increment $u_t$ from that filter. Models train on 10~s windows from 18 trials and
-are tested on windows of 10 to 240~s from 18 other trials. Phase rotation with
-measured angle sets $\theta_t=n\,u_t$ for harmonics $n=1,\dots,8$ and uses a
-squared-amplitude readout (Equation~\eqref{eq:squared-amplitude}) to produce
-sector probabilities. Only the readout and the initial phase are learned.
-Phase rotation with learned angle predicts the angles from the encoded inputs.
-Phase rotation with learned correction adds a learned offset to the measured
-increment. The standard GRU, LSTM, and Transformer learn their state updates
-from the same input channels.
+At 240~s, measured-angle rotation gives $29.6^\circ$ error and the best
+standard network gives $73.7^\circ$, a paired difference of $-44.1^\circ$
+(95\% trial-bootstrap interval $[-65.5,-31.4]$, Figure~\ref{fig:imu}a).
+A GRU on the integrated increment reaches $27.4^\circ$, and a cyclic filter
+using the measured shift reaches $30.2^\circ$. At 120~s the bias state
+reduces rotation error from $20.2^\circ$ to $12.8^\circ$ (paired change
+$-7.37^\circ$, 95\% interval $[-12.53,-1.87]$) and window-end NLL from
+$2.53$ to $1.52$.
 
-In the held-out example in Figure~\ref{fig:imu}a, the rotation with measured
-angle follows the optical heading past the 10~s training length.
-At 240~s (Figure~\ref{fig:imu}b), its mean heading error across trials is
-$29.6^\circ$, compared with $73.7^\circ$ for the best standard recurrent or
-attention model. The paired difference is $-44.1^\circ$, with trial-bootstrap
-interval $[-65.5,-31.4]$. The corresponding intervals favor the rotation over
-the standard networks at all five lengths for both error and window-averaged
-NLL (Table~\ref{tab:imu-contrast}). At 10~s the learned-angle rotation gives
-$0.34$ window-averaged NLL and the measured-angle rotation gives $0.38$. From
-30~s onward the measured angle gives lower window-averaged NLL
-(Table~\ref{tab:imu-a}).
-
-The learned-angle rotation tracks short windows, with $4.9^\circ$ error at
-10~s and $8.5^\circ$ at 30~s, then reaches $22.7^\circ$ at 60~s. The
-learned-correction rotation reaches $26.5^\circ$ at 30~s. Its mean correction
-of $4.4\times10^{-4}$~rad per step adds up to about $87^\circ$ at 120~s,
-consistent with the angular-error bound in Section~\ref{sec:stab}. Phase
-rotation with measured angle stays within $1.4^\circ$ of integrating $u_t$
-directly and supplies sector probabilities. A GRU on the integrated increment
-learns a residual correction to the accumulated angle and reaches $27.4^\circ$
-at 240~s with the same readout. The cyclic filter shifts its belief by the
-measured increment and learns only its spread, reaching $30.2^\circ$ at 240~s,
-close to measured-angle rotation ($29.6^\circ$) and well below the best standard
-network ($73.7^\circ$). It gives the lowest reported window-averaged NLL among
-learned models at 120 and 240~s ($1.03$ and $1.45$, compared with $1.30$ and
-$1.58$ for measured-angle rotation). Rotating a state or shifting a belief by
-the measured increment puts integration in the cyclic transition and supports
-extrapolation across architectures.
-
-The gyroscope's residual drift motivates a bias state in that transition.
-The rotation subtracts an estimate of the bias from each measured increment.
-A fixed rest detector activates the bias update after 1.5~s with gyroscope norm
-below $2^\circ$/s and accelerometer step change below $0.2$~m/s$^2$. During
-rest, the state averages the increment with a 1~s time constant. During
-motion, it retains the last estimate (Appendix~\ref{app:imu}). At 30, 60, and
-120~s, the paired changes in heading error are $-0.45^\circ$ $[-0.76,-0.19]$,
-$-2.42^\circ$ $[-4.32,-0.58]$, and $-7.37^\circ$ $[-12.53,-1.87]$, respectively
-(95\% trial-bootstrap intervals). At 120~s, error goes from $20.2^\circ$ to
-$12.8^\circ$, about a $37\%$ reduction. Window-end NLL goes from $2.53$ to $1.52$
-(Table~\ref{tab:imu-a}), a paired change of $-1.01$ $[-1.75,-0.13]$.
-The engineered VQF reference
-also combines a gyroscope bias state with rest detection
-\citep{laidig2023vqf}.
+In Figure~\ref{fig:imu}b, window-end error is $22.3^\circ$ without the bias
+state and $0.2^\circ$ with it, and mean error falls from $12.5^\circ$ to
+$2.3^\circ$. In Figure~\ref{fig:imu}c, mean errors over 200--240~s are
+$83.6^\circ$ for the GRU, $21.9^\circ$ for measured-angle rotation, and
+$23.5^\circ$ for the cyclic filter. Appendix~\ref{app:imu} gives the
+protocol and paired comparisons.
 
 \subsection{Pointer readings: magnetometer under disturbance}
 \label{sec:imu-mag}
-The second task is to estimate the absolute heading in 64 sectors from a uniform
-prior, with the tilt-compensated magnetometer heading added at every step as a
-pointer reading. Five of the test trials contain recorded magnetic disturbances.
-Our cyclic filter (Section~\ref{sec:filter}) shifts a categorical belief by $u_t$
-through a phase rotation of its Fourier coefficients and corrects it with a
-learned pointer likelihood. Its tracking error matches that of the best neural
-network on disturbed trials at 60~s, with a paired difference of $-1.4^\circ$
-from the LSTM and an interval of $[-3.4,0.6]$. On undisturbed trials it improves
-on the tuned complementary filter by $1.2^\circ$ (paired interval
-$[-2.1,-0.3]$). Table~\ref{tab:imu-b} reports both groups. With the same
-magnetometer features, the learned-angle phase rotation reaches $46.5^\circ$
-on disturbed trials at 60~s, compared with $9.5^\circ$ for the cyclic filter.
-This rotation only advances its state, so incorporating the pointer reading as
-heading evidence calls for a likelihood correction to the predicted belief.
-In this task magnetic disturbance enters through the pointer model. VQF's
-magnetic disturbance rejection puts structure in that model by screening
-readings before they correct the heading.
+Task~B estimates absolute heading in 64 sectors from a uniform prior, with a
+tilt-compensated magnetometer pointer reading at every step. Five test trials
+contain magnetic disturbances. The cyclic filter shifts the heading belief
+by the measured increment and corrects it with a learned pointer likelihood.
+
+On disturbed trials at 60~s, tracking error is $9.5^\circ$ for the cyclic
+filter, $46.5^\circ$ for learned-angle rotation, and $10.9^\circ$ for the
+LSTM (filter-minus-LSTM difference $-1.4^\circ$, paired interval $[-3.4,0.6]$).
+In Figure~\ref{fig:imu}d, full-window tracking errors are $12.4^\circ$ for
+the LSTM, $62.3^\circ$ for learned-angle rotation, and $7.5^\circ$ for the
+cyclic filter. Appendix Table~\ref{tab:imu-b} reports results by
+disturbance status.
+
+\FloatBarrier
 
 \subsection{Unobserved increments: gait phase from a shank IMU}
 \label{sec:gait}
-We estimate cyclic gait phase online at every step. An unknown, changing
-cadence sets the phase increment, and the shank waveform acts as a pointer
-reading of phase. The Camargo dataset contains 3,147 trials from 22 adults
-across treadmill, level-ground, ramp, and stair walking. We train on 13
-subjects, select learning rates on three, and test on six.
+We estimate gait phase online from a shank IMU. The cyclic filter propagates
+a joint belief over phase and cadence and corrects it with a learned
+likelihood on received packets. The 2~s and 3~s test bursts exceed the
+longest training dropout.
 
-The cyclic filter maintains a joint belief over phase and cadence. It shifts
-each phase distribution by its cadence, updates cadence with a random walk,
-and mixes in a uniform floor. A learned pointer likelihood corrects the
-joint belief on received packets. A missing packet skips the correction.
-We compare with a learned-angle phase rotation, a GRU, an LSTM, a causal
-temporal CNN from the published estimator family \citep{kang2021gait}, and a
-time-based estimator. Test bursts of missing packets recur every 4~s.
-The 2~s and 3~s bursts exceed the longest dropout seen in training.
+Learned-angle rotation stays at chance ($28.86\%$ RMSE), while the cyclic
+filter tracks phase through extended dropouts (Figure~\ref{fig:gait}).
+With 3~s bursts, the filter reaches $9.04\%$ RMSE, $27\%$ below the LSTM's
+$12.33\%$, with lower error on all six test subjects. The paired mean
+difference is $-3.13$ points (95\% subject-bootstrap interval
+$[-3.99,-2.30]$). Appendix Table~\ref{tab:gait} reports the other
+dropout lengths and recovery errors.
 
-Table~\ref{tab:gait} reports phase RMSE as a percentage of the gait cycle.
-Figure~\ref{fig:gait} shows absolute phase error in an example dropout, RMSE by
-dropout length, and paired RMSE for each test subject.
-The learned-angle rotation puts cyclic structure in the transition by
-accumulating inferred angles and stays at chance ($28.86\%$). The cyclic
-filter uses the same pointer to correct its predicted phase belief and tracks
-the gait cycle. On clean data the filter, LSTM,
-GRU, and temporal CNN span $1.84$--$2.04\%$. With 1~s bursts the filter, LSTM,
-and GRU span $2.82$--$2.99\%$. Both ranges are within $0.2$ percentage points.
-
-\begin{figure}[!t]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_gait.pdf}
 \caption{(a)~The LSTM and cyclic-filter traces show absolute phase error
@@ -150,26 +107,6 @@ to the median error of both models.
 the learned models and a dashed curve for the time-based estimator, with
 shading for dropouts longer than any used in training.
 (c)~Lines join the seed-averaged LSTM and cyclic-filter RMSE at 3~s for each
-of six test subjects, all with lower error for the filter and a paired mean
-difference of $-3.13$ percentage points (95\% subject-bootstrap interval
-$[-3.99,-2.30]$).}
+of six test subjects.}
 \label{fig:gait}
 \end{figure}
-
-During longer dropouts the filter keeps advancing the phase at its believed
-cadence. With 3~s bursts it reaches $9.04\%$ RMSE, $27\%$ below the LSTM's
-$12.33\%$. The paired subject-bootstrap difference is $-3.13$ points
-(95\% interval $[-3.99,-2.30]$), with lower error for all six test subjects.
-At 2~s, RMSE is $5.41\%$ versus $5.94\%$ for the LSTM (paired interval
-$[-0.99,-0.16]$ points), with lower error for five of six subjects. The filter
-recovers faster after a 3~s burst, with $4.83\%$ RMSE in the following second
-versus $6.88\%$ for the LSTM. It uses about half the LSTM's parameters
-(21,090 versus 42,994). At 3~s, the temporal CNN reaches $18.98\%$ with a finite
-input history, and the time-based estimator reaches $24.35\%$ by extrapolating
-from the previous stride duration.
-
-\input{tables/tab_gait}
-
-The best extrapolation in these tests comes from using the measured increment
-in the cyclic transition on BROAD and inferring the unobserved increment in
-the cyclic belief update on Camargo.
