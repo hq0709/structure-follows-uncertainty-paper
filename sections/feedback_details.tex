@@ -54,17 +54,6 @@ causality at a shared prefix and basic planner decisions.
 Figure~\ref{fig:feedback} shows how pointer readings sharpen the belief and
 how the resulting estimates perform under the shared planner.
 
-\begin{figure}[!htb]
-\centering
-\setlength{\abovecaptionskip}{4pt}
-\includegraphics[width=\linewidth]{figures/feedback_results.pdf}
-\caption{Tracking and control with missing events.
-(a)~Nominal NLL at $L=80$. Shading marks missing events. Age zero includes the exact
-initial pointer and later readings.
-(b)~Net utility averaged over $L=40,80$. Bars show one sample SD across five seeds.}
-\label{fig:feedback}
-\end{figure}
-
 \section{Planner Regime Sweep}
 \label{app:regimes}
 The sweep reuses the twenty frozen test checkpoints and the evaluation histories of the

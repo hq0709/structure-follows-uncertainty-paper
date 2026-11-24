@@ -12,16 +12,23 @@ main comparisons. Appendix~\ref{app:imu} documents the BROAD protocol and amendm
 \begin{figure}[!t]
 \centering
 \includegraphics[width=\linewidth]{figures/imu_main.pdf}
-\caption{Heading from a recorded IMU (myon aktos-t at 285.7~Hz on BROAD
-\citealp{laidig2021broad}). (a)~All learned models receive the same inputs. Phase
-rotation with measured angle uses the measured increment $u_t$. The GRU, LSTM,
-and Transformer shown here learn their state update. The learned models train
-on 10~s windows.
-(b)~A held-out 240~s window from trial~20 (seed~0): heading change of each
-model's most probable sector against the optical truth, and the error (2~s moving
-average). (c)~Error at the window end and (d)~NLL over valid steps on 18 held-out trials,
-averaged over five seeds and then trials. Gray curves are classical filters and
-have no NLL. The 240~s windows come from the three longest test trials.}
+\caption{(a)~For heading estimation on BROAD (myon aktos-t at 285.7~Hz,
+\citealp{laidig2021broad}), the same inputs feed phase rotation with
+$\theta=n u_t$ and a squared-amplitude readout or a learned GRU, LSTM, or
+Transformer update.
+(b)~The upper traces compare heading change from the most probable sector
+with the optical reference in a held-out 240~s window from trial~20 (seed~0),
+with the GRU in light blue.
+The lower traces show a 2~s moving average of error, with mean errors beyond
+10~s of $13^\circ$ for phase rotation and $85^\circ$ for the GRU.
+(c,d)~Window-end heading error and window-averaged NLL over valid steps
+include rotation with a bias state and a GRU on integrated $u_t$, with
+averages over five seeds and then 18 held-out trials through 120~s and
+the three longest test trials at 240~s.
+Shading marks time beyond training in (b) and the 10~s training length in
+(c,d), horizontal dotted lines mark chance error and uniform NLL, and the
+classical point estimates appear in (c) as dotted integrated $u_t$ and
+dash-dotted VQF curves.}
 \label{fig:imu}
 \label{fig:imu-sensor}
 \end{figure}
@@ -113,12 +120,33 @@ time-based estimator. Test bursts of missing packets recur every 4~s.
 The 2~s and 3~s bursts exceed the longest dropout seen in training.
 
 Table~\ref{tab:gait} reports phase RMSE as a percentage of the gait cycle.
+Figure~\ref{fig:gait} shows phase tracking through dropouts, including paired
+errors for each test subject.
 The learned-angle rotation puts cyclic structure in the transition by
 accumulating inferred angles and stays at chance ($28.86\%$). The cyclic
 filter uses the same pointer to correct its predicted phase belief and tracks
 the gait cycle. On clean data the filter, LSTM,
 GRU, and temporal CNN span $1.84$--$2.04\%$. With 1~s bursts the filter, LSTM,
 and GRU span $2.82$--$2.99\%$. Both ranges are within $0.2$ percentage points.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_gait.pdf}
+\caption{Gait phase estimation through sensor dropouts.
+(a)~True phase and seed-0 estimates from the LSTM and cyclic filter are
+shown during a test window with a shaded 3~s dropout and absolute phase error
+below.
+Among 633 candidate windows from the test subjects, this window is closest
+to the median error of both models.
+(b)~Phase RMSE across dropout lengths uses five-seed means and SD bars for
+the learned models, a dashed curve for the time-based estimator, and shading
+for dropouts longer than any used in training.
+(c)~Lines join the seed-averaged LSTM and cyclic-filter RMSE at 3~s for each
+of six test subjects, all with lower error for the filter and a paired mean
+difference of $-3.13$ percentage points (95\% subject-bootstrap interval
+$[-3.99,-2.30]$).}
+\label{fig:gait}
+\end{figure}
 
 During longer dropouts the filter keeps advancing the phase at its believed
 cadence. With 3~s bursts it reaches $9.04\%$ RMSE, $27\%$ below the LSTM's
