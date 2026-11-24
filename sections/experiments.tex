@@ -30,19 +30,17 @@ memory tasks under the same training setup.
 \begin{figure}[!t]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_reward.pdf}
-\caption{Terminal-reward learning for counting and valve control.
-(a,b)~Greedy success on length-10 parity and $\Z_3$ counting is plotted
-against millions of environment steps on a log scale for phase rotation
-(337 and 369 parameters), the Transformer (5.9k, 20.48M-step budget),
+\caption{(a, b)~Greedy success on length-10 parity and $\Z_3$ counting is
+plotted against millions of environment steps on a log scale for phase
+rotation (337 and 369 parameters), the Transformer (5.9k, 20.48M-step budget),
 the GRU (1.1k), and the LSTM (1.5k).
-Curves show five-seed means smoothed by a five-point moving average,
-with bands showing one SD across seeds.
-(c)~Valve success at $N=8,32,128$ is shown for phase rotation, the
-validation-selected LSTM ($H=16$) and GRU ($H=64$), the DeltaProduct
-adapter, and the learned cyclic counter, with means and SD bars over five
-seeds.
-Shading in (c) marks horizons beyond training ($N\leq8$), and dotted
-lines mark chance success in all panels.}
+Curves show five-seed means with a five-point moving average, and
+Table~\ref{tab:main} summarizes outcomes across seeds.
+(c)~Points and bars show five-seed means and sample SDs for valve success at
+$N=8,32,128$ for phase rotation, the validation-selected LSTM ($H=16$) and
+GRU ($H=64$), and the DeltaProduct adapter (Table~\ref{tab:valve}).
+Direct labels identify the curves, dotted lines mark chance success, and
+shading in (c) marks horizons beyond the training range $N\leq8$.}
 \label{fig:reward}
 \end{figure}
 
@@ -118,9 +116,10 @@ combines the likelihood of the reported token with a learned increment prior to
 form its shift probabilities. For an erased token it uses the prior directly.
 Matched Bayes uses the generating probabilities.
 
-Table~\ref{tab:sweep} gives the increments results at $L=40$, and
-Figure~\ref{fig:sweep} compares excess NLL over matched Bayes across misread
-rates. On clean inputs, both gated models fit the count with dense labels.
+Table~\ref{tab:sweep} gives the increments results at $L=40$ under all three
+training signals, and Figure~\ref{fig:sweep} compares excess NLL over matched
+Bayes across misread rates. On clean inputs, both gated models fit the count
+with dense labels.
 With a terminal label or
 reward, exact tracking requires an exact cyclic transition among the tested
 models. The measured-angle rotation and all three cyclic filters reach $1.000$
@@ -133,15 +132,14 @@ measured-angle rotation and the filters (Appendix~\ref{app:sweep}).
 \centering
 \includegraphics[width=\linewidth]{figures/fig_sweep.pdf}
 \caption{Excess test NLL over matched Bayes versus token misread rate $r$.
-(a--c)~The increments regime uses $L=40$ with dense labels, a terminal label,
-or terminal reward, respectively.
-(d)~The missing-token regime uses pointer readings and terminal reward at
-$L=160$.
-Points show mean NLL differences paired by test seed across five seeds, and
-bars show one SD of the paired differences.
-Values below $0.001$ nats are drawn at the floor of the log axis, and dashed
-lines with open markers identify learned-angle rotation and the
-token-constrained filter.}
+(a, b)~The increments regime uses a terminal label and terminal reward,
+respectively, at $L=40$, and (c) uses terminal reward with missing tokens
+and pointer readings at $L=160$.
+Points and bars show the mean and sample SD of NLL differences paired across
+five test seeds, with values below $0.001$ nats at the floor of the log axis.
+The thick line marks the misread-aware filter, the dashed line with open
+markers marks the token-constrained filter, and grey lines show the GRU and
+LSTM. Table~\ref{tab:sweep} and Appendix~\ref{app:sweep} report all models.}
 \label{fig:sweep}
 \end{figure}
 
@@ -152,10 +150,10 @@ to the true position after a misread changes the final residue. The NLL
 computation floors probabilities at $10^{-8}$. The misread-aware filter matches
 Bayes accuracy at every tested rate under all three signals in this regime and
 keeps NLL close to Bayes with dense or terminal supervision
-(Figure~\ref{fig:sweep}a,b). At $r=0.01$,
+(Table~\ref{tab:sweep}, Figure~\ref{fig:sweep}a). At $r=0.01$,
 terminal supervision gives $0.966$ NLL, compared with $5.839$ for the
 token-constrained filter and $0.965$ for Bayes. The reward-trained misread-aware
-filter reaches $0.972$ NLL at the same rate.
+filter reaches $0.972$ NLL at the same rate (Figure~\ref{fig:sweep}b).
 
 With missing tokens and noisy pointer readings, the filter places uncertainty
 from both sources in the belief update. At $r=0.3$ and $L=160$, the misread-aware
@@ -165,7 +163,7 @@ reward, the misread-aware filter achieves the lowest NLL among learned models
 at $1.637$, with accuracy of $0.375$. The GRU gives $5.081$ NLL and $0.356$
 accuracy, and the LSTM gives $3.988$ NLL and $0.344$ accuracy.
 The misread-aware filter has the lowest excess NLL at every rate in this
-reward setting (Figure~\ref{fig:sweep}d).
+reward setting (Figure~\ref{fig:sweep}c).
 Appendix~\ref{app:sweep} reports every rate under all three signals.
 
 \input{tables/tab_sweep}
@@ -229,24 +227,9 @@ nats of matched Bayes (Appendix~\ref{app:feedbackdetails}).
 \input{tables/tab_feedback}
 
 NLL climbs during runs of missed turns, and a new pointer reading sharpens the
-belief (Appendix~\ref{app:feedbackdetails}, Figure~\ref{fig:feedback}a). At length
+belief (Appendix Figure~\ref{fig:feedback}a). At length
 80, the token-constrained filter averages $1.361$ immediately before a new
 pointer reading and $0.591$ at the reading.
-
-\begin{figure}[!t]
-\centering
-\includegraphics[width=\linewidth]{figures/feedback_results.pdf}
-\caption{Tracking and control with missing events.
-(a)~Nominal NLL at $L=80$ is plotted against steps since the last pointer
-reading, with shading for missing turns and age zero including the exact
-initial pointer and later readings.
-The dashed curve shows matched Bayes, and solid curves show the
-token-constrained filter, GRU, and phase rotation.
-(b)~Net utility in the nominal, event-rate shift, and noisy-pointer regimes
-is averaged over $L=40,80$ and five seeds, with bars showing one sample SD
-across seeds.}
-\label{fig:feedback}
-\end{figure}
 
 \subsection{Acting on the belief with a shared planner}
 \label{sec:regimes}
@@ -266,7 +249,7 @@ The shared planner achieves its highest utilities among learned estimators
 with cyclic filter beliefs. In the default setting, the token-constrained
 filter reaches $63.0$ points of net utility, compared with $62.3$ points for
 both the GRU and phase rotation (Table~\ref{tab:feedback},
-Figure~\ref{fig:feedback}b). The clearest effect of the belief is on the
+Appendix Figure~\ref{fig:feedback}b). The clearest effect of the belief is on the
 decision to read the pointer. At length 80 with
 noisier tracking readings, matched Bayes leads to $1.05$ readings per episode
 and the constrained filter to $0.68$, for net utilities of $59.9$ and $58.6$
@@ -276,10 +259,11 @@ points.
 We keep the estimators fixed and vary the action horizon, the cost of a
 reading, and the reliability of control-time readings. All 75 settings use the
 same histories and pair action outcomes across estimators
-(Appendix~\ref{app:regimes}). Figure~\ref{fig:regimes}a shows the share of the
-attainable gain each estimator retains, and panel~b shows the
-token-constrained filter's paired gain over the GRU. Each point averages six
-test conditions and five seeds. Matched Bayes utility minus uniform-belief
+(Appendix~\ref{app:regimes}). Figure~\ref{fig:regimes}a summarizes the share
+of attainable gain retained by each estimator across headroom groups, and
+panel~(b) shows the token-constrained filter's paired gain over the GRU in
+each regime. Each regime averages six test conditions and five seeds.
+Matched Bayes utility minus uniform-belief
 utility defines the \emph{estimation headroom}. It ranges from $0.3$ to
 $26$ percentage points. Every learned estimator stays within $1.5$ points of
 matched Bayes, and the token-constrained filter stays within $0.66$ points.
@@ -294,17 +278,17 @@ excludes zero in 47 settings, and the largest gain is $1.47$ points.
 \includegraphics[width=\linewidth]{figures/fig_regimes.pdf}
 \caption{Utility across 75 planner regimes, each averaged over six test
 conditions and five seeds.
-(a)~Points show the share of attainable gain retained by each estimator,
-with attainable gain defined as the utility of matched Bayes over a uniform
-belief.
-Headroom groups are below 3 points (12 regimes), 3 to under 10 points (23),
-and at least 10 points (40).
-Black bars mark medians, the dashed and dotted lines mark $100\%$ and $95\%$,
-respectively, and values above $120\%$ are drawn at the upper edge.
-(b)~The token-constrained filter's mean gains over the GRU are nonnegative
-and plotted against headroom on a log scale with 95\% paired seed-bootstrap
-intervals, with filled points for the 47 intervals above zero and open points
-for the 28 intervals including zero.}
+(a)~For the GRU, phase rotation, and the token-constrained filter in each
+headroom group, the dot and bar show the median and interquartile range of
+retained share across regimes (Appendix~\ref{app:regimes} lists all estimators).
+Headroom is the utility gain of matched Bayes over a uniform belief, grouped
+as below 3 points (12 regimes), 3 to under 10 points (23), and at least 10
+points (40).
+Dashed and dotted lines mark $100\%$ and $95\%$ retained, respectively.
+(b)~The token-constrained filter's mean gain over the GRU is plotted against
+headroom on a log scale with 95\% paired seed-bootstrap intervals, with filled
+points for the 47 intervals above zero and open points for the 28 intervals
+including zero.}
 \label{fig:regimes}
 \end{figure}
 

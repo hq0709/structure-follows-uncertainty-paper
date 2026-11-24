@@ -1,0 +1,95 @@
+% Figure 1 (TikZ, drawn at text width 16.5 cm; do not rescale).
+% Requires: \usepackage{tikz} and \usetikzlibrary{arrows.meta,calc}.
+% Colours encode where the cyclic structure sits (same as the data figures).
+\definecolor{ovRot}{HTML}{A0442C}\definecolor{ovRotBg}{HTML}{FBF3F0}
+\definecolor{ovFil}{HTML}{0E7C66}\definecolor{ovFilBg}{HTML}{EEF7F4}
+\definecolor{ovBias}{HTML}{7A3B5E}\definecolor{ovBiasBg}{HTML}{F7F1F5}
+\definecolor{ovInk}{HTML}{1F2328}\definecolor{ovMute}{HTML}{80868E}
+\definecolor{ovLine}{HTML}{C3C8CE}\definecolor{ovPlanBg}{HTML}{F2F3F5}
+\begin{tikzpicture}[x=1cm, y=1cm, >={Stealth[length=4.5pt,width=4pt]}, font=\footnotesize,
+  card/.style={rounded corners=5pt, line width=.7pt},
+  title/.style={font=\small\bfseries},
+  sub/.style={font=\scriptsize, text=ovMute},
+  flow/.style={->, line width=.8pt, draw=ovInk!65},
+  ev/.style={rounded corners=4pt, line width=.6pt, fill=white},
+]
+% geometry: module i spans [x_i, x_i + w]; tags share the same columns
+\def\w{4.05}\def\wp{2.45}\def\ytop{1.45}\def\ybot{-1.45}
+\def\xa{.55}\def\xb{5.0}\def\xc{9.45}\def\xd{13.9}
+
+% ---------------------------------------------------------------- module cards
+\draw[card, draw=ovRot, fill=ovRotBg]   (\xa,\ybot) rectangle ++(\w, 2.9);
+\draw[card, draw=ovFil, fill=ovFilBg]   (\xb,\ybot) rectangle ++(\w, 2.9);
+\draw[card, draw=ovBias, fill=ovBiasBg] (\xc,\ybot) rectangle ++(\w, 2.9);
+\draw[card, draw=ovMute, fill=ovPlanBg] (\xd,\ybot) rectangle ++(\wp, 2.9);
+\node[title, text=ovRot]  at (\xa+\w/2, 1.12) {Transition};
+\node[title, text=ovFil]  at (\xb+\w/2, 1.12) {Belief update};
+\node[title, text=ovBias] at (\xc+\w/2, 1.12) {Pointer \& bias model};
+\node[title, text=ovInk]  at (\xd+\wp/2, 1.12) {Planner};
+
+% transition: state on the Z_4 ring rotates by the measured increment
+\begin{scope}[shift={(\xa+\w/2-.15, .22)}]
+  \draw[ovLine, line width=.8pt] (0,0) circle (.42);
+  \foreach \a/\k in {90/0, 0/1, -90/2, 180/3} {\fill[ovLine] (\a:.42) circle (1.7pt);
+    \node[font=\tiny, text=ovMute] at (\a:.27) {\k};}
+  \fill[ovRot] (90:.42) circle (2.6pt);
+  \draw[->, ovRot, line width=1.1pt] (80:.58) arc (80:12:.58);
+  \node[font=\scriptsize, text=ovRot, anchor=west] at (40:.62) {$+u_t$};
+\end{scope}
+\node[text=ovInk, align=center, font=\small] at (\xa+\w/2, -.68) {$z_t = e^{\,i\theta(u_t)}\, z_{t-1}$\\[1pt]$p(s)\propto|w_s^{\top}z_t|^2$};
+\node[sub] at (\xa+\w/2, -1.27) {phase rotation};
+
+% belief update: shift-and-mix a categorical belief by the increment distribution
+\begin{scope}[shift={(\xb+\w/2-1.25, -.12)}]
+  \foreach \h [count=\i from 0] in {.05,.7,.1,.05} \fill[ovFil!50] (\i*.2,0) rectangle ++(.14,\h);
+  \draw[ovLine, line width=.6pt] (-.05,0) -- (.79,0);
+  \draw[->, ovFil, line width=.9pt] (.98,.33) -- (1.52,.33);
+  \node[font=\tiny, text=ovFil] at (1.25,.5) {shift, mix};
+  \foreach \h [count=\i from 0] in {.05,.32,.42,.13} \fill[ovFil] (1.71+\i*.2,0) rectangle ++(.14,\h);
+  \draw[ovLine, line width=.6pt] (1.66,0) -- (2.5,0);
+\end{scope}
+\node[text=ovInk, font=\small] at (\xb+\w/2, -.62) {$\tilde b_t=\textstyle\sum_j q_t(j)\,P^{\,j} b_{t-1}$};
+\node[sub] at (\xb+\w/2, -1.27) {cyclic filter};
+
+% pointer and bias: a reading sharpens the belief; a rest-gated bias is removed from u_t
+\begin{scope}[shift={(\xc+\w/2-1.25, -.12)}]
+  \foreach \h [count=\i from 0] in {.05,.32,.42,.13} \fill[ovBias!45] (\i*.2,0) rectangle ++(.14,\h);
+  \draw[ovLine, line width=.6pt] (-.05,0) -- (.79,0);
+  \draw[->, ovBias, line width=.9pt] (.98,.33) -- (1.52,.33);
+  \node[font=\tiny, text=ovBias] at (1.25,.5) {reading $o_t$};
+  \foreach \h [count=\i from 0] in {.03,.08,.72,.04} \fill[ovBias] (1.71+\i*.2,0) rectangle ++(.14,\h);
+  \draw[ovLine, line width=.6pt] (1.66,0) -- (2.5,0);
+\end{scope}
+\node[text=ovInk, align=center, font=\small] at (\xc+\w/2, -.68) {$b_t\propto\ell(o_t)\odot\tilde b_t$\\[1pt]$u_t\mapsto u_t-\hat\beta_t$};
+\node[sub] at (\xc+\w/2, -1.27) {likelihood and bias state};
+
+% planner
+\node[font=\footnotesize, text=ovInk, align=center] at (\xd+\wp/2, .12) {turn\\[1pt]read\\[1pt]finish};
+\node[sub, align=center] at (\xd+\wp/2, -1.12) {same policy for\\every estimator};
+
+% ---------------------------------------------------------------- data flow
+\draw[flow] (0,0) node[above right, font=\scriptsize, text=ovInk, inner sep=1pt, xshift=-3pt] {$o_t$} -- (\xa,0);
+\draw[flow] (\xa+\w,0) -- (\xb,0);
+\draw[flow] (\xb+\w,0) -- (\xc,0);
+\draw[flow] (\xc+\w,0) -- node[above, font=\scriptsize, text=ovInk, inner sep=1.5pt] {$b_t$} (\xd,0);
+
+% ---------------------------------------------------------------- where the uncertainty enters, and the evidence
+\def\ty{-1.85}\def\th{1.3}
+\foreach \x/\ww/\c in {\xa/\w/ovRot, \xb/\w/ovFil, \xc/\w/ovBias, \xd/\wp/ovMute} {
+  \draw[ev, draw=\c] (\x,\ty-\th) rectangle ++(\ww,\th);
+  \draw[->, \c, line width=.8pt] (\x+\ww/2,\ty) -- (\x+\ww/2,\ybot);
+}
+\tikzset{evtxt/.style={anchor=north west, align=left, text=ovInk, inner sep=0pt, font=\scriptsize}}
+\node[evtxt] at (\xa+.18,\ty-.16) {{\footnotesize\bfseries\color{ovRot}Increment observed}\\[3pt]
+   \scriptsize IMU, 240\,s: \textbf{29.6$^\circ$} vs 73.7$^\circ$\\[1pt]
+   \scriptsize reward-only valve: \textbf{1.000} acc.};
+\node[evtxt] at (\xb+.18,\ty-.16) {{\footnotesize\bfseries\color{ovFil}Increment uncertain}\\[3pt]
+   \scriptsize misreads: NLL \textbf{0.966} ${\approx}$ Bayes\\[1pt]
+   \scriptsize gait dropouts: \textbf{9.0\%} vs 12.3\%};
+\node[evtxt] at (\xc+.18,\ty-.16) {{\footnotesize\bfseries\color{ovBias}Drift or disturbance}\\[3pt]
+   \scriptsize IMU, 120\,s: 20.2$^\circ$ $\to$ \textbf{12.8$^\circ$}\\[1pt]
+   \scriptsize with a rest-gated bias state};
+\node[evtxt] at (\xd+.18,\ty-.16) {{\footnotesize\bfseries Decisions}\\[3pt]
+   \scriptsize $\geq$\textbf{95\%} of gain\\[1pt]
+   \scriptsize beat GRU: \textbf{47/75}};
+\end{tikzpicture}

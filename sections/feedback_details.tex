@@ -54,6 +54,21 @@ causality at a shared prefix and basic planner decisions.
 Figure~\ref{fig:feedback} shows how pointer readings sharpen the belief and
 how the resulting estimates perform under the shared planner.
 
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/feedback_results.pdf}
+\caption{(a)~Nominal NLL at $L=80$ is averaged over five seeds and plotted
+against steps since the last pointer reading.
+Shading marks missing turns, and age zero includes the exact initial pointer
+and later readings.
+The dashed curve shows matched Bayes, and solid curves show the
+token-constrained filter, GRU, and phase rotation.
+(b)~Points show mean net utility in the nominal, event-rate shift, and
+noisy-pointer regimes over $L=40,80$ and five seeds, with bars showing one
+sample SD across seeds.}
+\label{fig:feedback}
+\end{figure}
+
 \section{Planner Regime Sweep}
 \label{app:regimes}
 The sweep reuses the twenty frozen test checkpoints and the evaluation histories of the

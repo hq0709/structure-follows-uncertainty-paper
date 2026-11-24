@@ -13,21 +13,19 @@ leave several possible positions. The model can track their probabilities in a
 shows how each source of uncertainty shapes the estimator and how the
 resulting beliefs guide the planner.
 
-\begin{figure}[!t]
+\begin{figure}[!htbp]
 \centering
-\includegraphics[width=\linewidth]{figures/fig_overview.pdf}
-\caption{Cyclic structure helps estimation at the source of uncertainty.
-The left column shows phase rotation with an observed increment and a
-squared-amplitude readout for valve tracking and inertial heading
-(Sections~\ref{sec:sweep} and~\ref{sec:imu}).
-The middle column mixes exact shifts of the four-position belief and corrects
-it with the pointer likelihood, with results for token misreads and gait
-dropouts (Sections~\ref{sec:sweep} and~\ref{sec:gait}).
-The right column estimates gyroscope bias during detected rest and places
-magnetic disturbance in the pointer model (Section~\ref{sec:imu}).
-The bottom strip compares utility under a shared turn/read/finish planner,
-with filter gains concentrated in the decision to read
-(Section~\ref{sec:regimes}).}
+\input{figures/fig_overview}
+\caption{Cyclic structure improves estimation by matching each update to the
+source of uncertainty. From left to right, the red transition uses an
+observed increment to advance the state on $\Z_4$ and reads out squared
+amplitudes, and the green belief update mixes cyclic shifts for uncertain
+increments (Sections~\ref{sec:transfer}, \ref{sec:sweep}, and~\ref{sec:gait}).
+The purple module sharpens the belief with a pointer likelihood and corrects
+the increment with a bias estimate updated during rest (Section~\ref{sec:imu}).
+The shared planner uses each estimator's belief to choose whether to turn,
+read, or finish (Section~\ref{sec:regimes}), and the cards summarize valve
+and gait tracking, IMU heading errors, and planner utility.}
 \label{fig:overview}
 \label{fig:method}
 \end{figure}
