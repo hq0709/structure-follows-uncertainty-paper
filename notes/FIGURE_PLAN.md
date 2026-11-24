@@ -77,3 +77,10 @@
 - 小数位统一：准确率和成功率一律保留 3 位（.500 而不是 .50），NLL 也保留 3 位。
 - 均值和误差的写法统一为 "mean ± SD"。现在 Table 3 用的是 "(SD)"，其他表用 ±。
 - 表 4（tab_feedback）有 9 列太密，可以把 Gap 两列移到附录，或者把 Params 列挪进 caption。
+
+## 新 Fig：步态相位丢包曲线（放在 Sec. sec:gait，可选）
+
+数据：`runs/followup/gait/gait_summary.json`（各模型各条件的 rmse / rmse_during / rmse_after，均值和 SD），逐 seed 的结果在 `runs/followup/gait/runs_final/`（filter）和 `runs2/`（基线）。
+
+- (a) 横轴为丢包长度（0, 0.2, 0.5, 1, 2, 3 s），纵轴为相位 RMSE（% 步态周期）。cyclic filter 用墨绿，LSTM/GRU/TCN 用蓝灰并以 marker 区分，时间型估计器用灰色虚线。在 1 s 处画一条竖虚线，标注"训练时最长丢包"。
+- (b) 一段测试 trial 的相位轨迹，中间插入一个 3 s 丢包：真值、filter 和 LSTM 三条线，丢包区间用浅灰色底纹标出。要表达的是丢包期间 filter 按步频继续推进相位，LSTM 漂走。这张图需要重新跑一次推理导出轨迹，需要的话告诉我。
